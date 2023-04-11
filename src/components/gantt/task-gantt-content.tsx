@@ -50,6 +50,7 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
   setGanttEvent,
   setFailedTask,
   setSelectedTask,
+  onDragChange,
   onDateChange,
   onProgressChange,
   onDoubleClick,
@@ -93,6 +94,16 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
       );
       if (isChanged) {
         setGanttEvent({ action: ganttEvent.action, changedTask });
+        if (!!onDragChange) {
+          try {
+            await onDragChange(
+              changedTask,
+              changedTask.barChildren
+            );
+          } catch (error) {
+            // silent fail.
+          }
+        }
       }
     };
 
@@ -183,6 +194,7 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
     initEventX1Delta,
     onProgressChange,
     timeStep,
+    onDragChange,
     onDateChange,
     svg,
     isMoving,

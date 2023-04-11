@@ -51,6 +51,13 @@ export interface EventOption {
    */
   onClick?: (task: Task) => void;
   /**
+   * Invokes on drag. Chart undoes operation if method return false or error.
+   */
+  onDragChange?: (
+    task: Task,
+    children: Task[]
+  ) => void | boolean | Promise<void> | Promise<boolean>;
+  /**
    * Invokes on end and start time change. Chart undoes operation if method return false or error.
    */
   onDateChange?: (

@@ -40,6 +40,7 @@ You may handle actions
 <Gantt
   tasks={tasks}
   viewMode={view}
+  onDragChange={onTaskDrag}
   onDateChange={onTaskChange}
   onTaskDelete={onTaskDelete}
   onProgressChange={onProgressChange}
@@ -75,6 +76,7 @@ npm start
 | onDoubleClick      | (task: Task) => void                                                          | Specifies the function to be executed on the taskbar onDoubleClick event.               |
 | onClick            | (task: Task) => void                                                          | Specifies the function to be executed on the taskbar onClick event.                     |
 | onDelete\*         | (task: Task) => void/boolean/Promise<void>/Promise<boolean>                   | Specifies the function to be executed on the taskbar on Delete button press event.      |
+| onDragChange\*     | (task: Task, children: Task[]) => void/boolean/Promise<void>/Promise<boolean> | Specifies the function to be executed when drag taskbar event on timeline has moved.    |
 | onDateChange\*     | (task: Task, children: Task[]) => void/boolean/Promise<void>/Promise<boolean> | Specifies the function to be executed when drag taskbar event on timeline has finished. |
 | onProgressChange\* | (task: Task, children: Task[]) => void/boolean/Promise<void>/Promise<boolean> | Specifies the function to be executed when drag taskbar progress event has finished.    |
 | onExpanderClick\*  | onExpanderClick: (task: Task) => void;                                        | Specifies the function to be executed on the table expander click                       |

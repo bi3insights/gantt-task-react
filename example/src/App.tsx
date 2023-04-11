@@ -1,8 +1,8 @@
 import React from "react";
-import { Task, ViewMode, Gantt } from "gantt-task-react";
+import { Task, ViewMode, Gantt } from "gantt-task-react-bi3";
 import { ViewSwitcher } from "./components/view-switcher";
 import { getStartEndDateForProject, initTasks } from "./helper";
-import "gantt-task-react/dist/index.css";
+import "gantt-task-react-bi3/dist/index.css";
 
 // Init
 const App = () => {
@@ -17,6 +17,10 @@ const App = () => {
   } else if (view === ViewMode.Week) {
     columnWidth = 250;
   }
+
+  const handleTaskDrag = (task: Task) => {
+    console.log("On date drag Id:" + task.id);
+  };
 
   const handleTaskChange = (task: Task) => {
     console.log("On date change Id:" + task.id);
@@ -78,6 +82,7 @@ const App = () => {
       <Gantt
         tasks={tasks}
         viewMode={view}
+        onDragChange={handleTaskDrag}
         onDateChange={handleTaskChange}
         onDelete={handleTaskDelete}
         onProgressChange={handleProgressChange}
@@ -92,6 +97,7 @@ const App = () => {
       <Gantt
         tasks={tasks}
         viewMode={view}
+        onDragChange={handleTaskDrag}
         onDateChange={handleTaskChange}
         onDelete={handleTaskDelete}
         onProgressChange={handleProgressChange}
