@@ -61,6 +61,8 @@ export const GridBody: React.FC<GridBodyProps> = ({
   let tickX = 0;
   const ticks: ReactChild[] = [];
   let today: ReactChild = <rect />;
+  let weekends: [ReactChild] = [<rect />];
+  const shoeWeekends = ((((dates[0].valueOf())-(dates[1].valueOf()))/24/60/60/1000)===-1);  // Only show gray-column weekends when in Day view - when the first two dates consecutive.
   for (let i = 0; i < dates.length; i++) {
     const date = dates[i];
     ticks.push(
@@ -74,18 +76,9 @@ export const GridBody: React.FC<GridBodyProps> = ({
       />
     );
     if (
-      (i + 1 !== dates.length &&
-        date.getTime() < now.getTime() &&
-        dates[i + 1].getTime() >= now.getTime()) ||
-      // if current date is last
-      (i !== 0 &&
-        i + 1 === dates.length &&
-        date.getTime() < now.getTime() &&
-        addToDate(
-          date,
-          date.getTime() - dates[i - 1].getTime(),
-          "millisecond"
-        ).getTime() >= now.getTime())
+      ((i+1)!==dates.length && date.getTime()<now.getTime() && dates[i+1].getTime()>=now.getTime())
+      ||  // if current date is last
+      (i!==0 && (i+1)===dates.length && date.getTime()<now.getTime() && addToDate(date,date.getTime()-dates[i-1].getTime(),"millisecond").getTime()>=now.getTime())
     ) {
       today = (
         <rect
@@ -98,12 +91,7 @@ export const GridBody: React.FC<GridBodyProps> = ({
       );
     }
     // rtl for today
-    if (
-      rtl &&
-      i + 1 !== dates.length &&
-      date.getTime() >= now.getTime() &&
-      dates[i + 1].getTime() < now.getTime()
-    ) {
+    if (rtl && (i+1)!==dates.length && date.getTime()>=now.getTime() && dates[i+1].getTime()<now.getTime()) {
       today = (
         <rect
           x={tickX + columnWidth}
@@ -115,6 +103,20 @@ export const GridBody: React.FC<GridBodyProps> = ({
       );
     }
     tickX += columnWidth;
+
+    // Gray-out weekends columns
+    if (!!shoeWeekends && [5,6].includes(date.getDay())) {
+      weekends.push(
+        <rect
+          key={`${date.getFullYear()}${date.getMonth()}${date.getDate()}`}
+          x={tickX}
+          y={0}
+          width={columnWidth}
+          height={y}
+          fill="hsl(0deg 0% 0% / 10%)"
+        />
+      );
+    }
   }
   return (
     <g className="gridBody">
@@ -122,6 +124,9 @@ export const GridBody: React.FC<GridBodyProps> = ({
       <g className="rowLines">{rowLines}</g>
       <g className="ticks">{ticks}</g>
       <g className="today">{today}</g>
+      {!!shoeWeekends && weekends.map((r,i)=>{
+        return (<g key={i} className="weekends">{r}</g>);
+      })}
     </g>
   );
 };
