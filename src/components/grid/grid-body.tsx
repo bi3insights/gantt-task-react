@@ -62,7 +62,7 @@ export const GridBody: React.FC<GridBodyProps> = ({
   const ticks: ReactChild[] = [];
   let today: ReactChild = <rect />;
   let weekends: [ReactChild] = [<rect />];
-  const shoeWeekends = ((((dates[0].valueOf())-(dates[1].valueOf()))/24/60/60/1000)===-1);  // Only show gray-column weekends when in Day view - when the first two dates consecutive.
+  const showWeekends = ((((dates[0].valueOf())-(dates[1].valueOf()))/24/60/60/1000)===-1);  // Only show gray-column weekends when in Day view - when the first two dates consecutive.
   for (let i = 0; i < dates.length; i++) {
     const date = dates[i];
     ticks.push(
@@ -105,7 +105,7 @@ export const GridBody: React.FC<GridBodyProps> = ({
     tickX += columnWidth;
 
     // Gray-out weekends columns
-    if (!!shoeWeekends && [5,6].includes(date.getDay())) {
+    if (!!showWeekends && [5,6].includes(date.getDay())) {
       weekends.push(
         <rect
           key={`${date.getFullYear()}${date.getMonth()}${date.getDate()}`}
@@ -124,7 +124,7 @@ export const GridBody: React.FC<GridBodyProps> = ({
       <g className="rowLines">{rowLines}</g>
       <g className="ticks">{ticks}</g>
       <g className="today">{today}</g>
-      {!!shoeWeekends && weekends.map((r,i)=>{
+      {!!showWeekends && weekends.map((r,i)=>{
         return (<g key={i} className="weekends">{r}</g>);
       })}
     </g>
