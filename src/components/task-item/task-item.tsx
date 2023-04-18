@@ -58,25 +58,20 @@ export const TaskItem: React.FC<TaskItemProps> = props => {
 
   useEffect(() => {
     if (textRef.current) {
-      setIsTextInside(textRef.current.getBBox().width < task.x2 - task.x1);
+      setIsTextInside(textRef.current.getBBox().width < (task.x2-task.x1));
     }
   }, [textRef, task]);
 
   const getX = () => {
-    const width = task.x2 - task.x1;
+    const width = (task.x2-task.x1);
     const hasChild = task.barChildren.length > 0;
     if (isTextInside) {
-      return task.x1 + width * 0.5;
+      return (task.x1 + (width * 0.5));
     }
     if (rtl && textRef.current) {
-      return (
-        task.x1 -
-        textRef.current.getBBox().width -
-        arrowIndent * +hasChild -
-        arrowIndent * 0.2
-      );
+      return (task.x1 - textRef.current.getBBox().width - (arrowIndent * +hasChild) - (arrowIndent * 0.2));
     } else {
-      return task.x1 + width + arrowIndent * +hasChild + arrowIndent * 0.2;
+      return task.x1 + width + (arrowIndent * +hasChild) + (arrowIndent * 0.2);
     }
   };
 
@@ -110,7 +105,7 @@ export const TaskItem: React.FC<TaskItemProps> = props => {
       {taskItem}
       <text
         x={getX()}
-        y={task.y + taskHeight * 0.5}
+        y={task.y + (taskHeight * 0.5)}
         className={
           isTextInside
             ? style.barLabel
