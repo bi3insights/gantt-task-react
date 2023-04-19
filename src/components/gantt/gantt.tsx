@@ -233,12 +233,13 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   }, [failedTask, barTasks]);
 
   useEffect(() => {
-    if (!listCellWidth) {
-      setTaskListWidth(0);
-    }
-    if (taskListRef.current) {
-      setTaskListWidth(taskListRef.current.offsetWidth);
-    }
+    window.setTimeout(()=>{  // This timeout fixes incorrect gantt scrollbar left-margin when using custom tasks-list component.
+      if (taskListRef.current) {
+        setTaskListWidth(taskListRef.current.offsetWidth);
+      } else if (!listCellWidth) {
+        setTaskListWidth(0);
+      }
+    },1);
   }, [taskListRef, listCellWidth]);
 
   useEffect(() => {
