@@ -20,7 +20,7 @@ export const Bar: React.FC<TaskItemProps> = ({
     task.height
   );
   const handleHeight = task.height - 2;
-  const g_classes = styles.barWrapper + (!!task.isDisabled?" disabled":"");
+  const g_classes = styles.barWrapper + (!!task.isDisabled?" "+styles.barWrapper_disabled:"");
   return (
     <g className={g_classes} tabIndex={0}>
       <BarDisplay

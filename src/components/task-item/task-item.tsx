@@ -74,7 +74,7 @@ export const TaskItem: React.FC<TaskItemProps> = props => {
       return task.x1 + width + (arrowIndent * +hasChild) + (arrowIndent * 0.2);
     }
   };
-  console.log("taskHeight =", taskHeight);
+
   return (
     <g
       onKeyDown={e => {
