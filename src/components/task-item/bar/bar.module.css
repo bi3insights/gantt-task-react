@@ -2,7 +2,7 @@
   cursor: pointer;
   outline: none;
 }
-.barWrapper_disabled {
+.barWrapper.disabled {
   cursor: default;
 }
 
