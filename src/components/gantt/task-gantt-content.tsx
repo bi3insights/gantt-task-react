@@ -19,11 +19,14 @@ export type TaskGanttContentProps = {
   rowHeight: number;
   columnWidth: number;
   timeStep: number;
+  // excludeWeekdays: Array<number>;
   svg?: React.RefObject<SVGSVGElement>;
   svgWidth: number;
   taskHeight: number;
   arrowColor: string;
   arrowIndent: number;
+  arrowLineRadius: number;
+  arrowLineStroke: number;
   fontSize: string;
   fontFamily: string;
   rtl: boolean;
@@ -40,10 +43,13 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
   rowHeight,
   columnWidth,
   timeStep,
+  // excludeWeekdays,
   svg,
   taskHeight,
   arrowColor,
   arrowIndent,
+  arrowLineRadius,
+  arrowLineStroke,
   fontFamily,
   fontSize,
   rtl,
@@ -64,12 +70,9 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
 
   // create xStep
   useEffect(() => {
-    const dateDelta =
-      dates[1].getTime() -
-      dates[0].getTime() -
-      dates[1].getTimezoneOffset() * 60 * 1000 +
-      dates[0].getTimezoneOffset() * 60 * 1000;
-    const newXStep = (timeStep * columnWidth) / dateDelta;
+    const dateDelta = (dates[1].getTime() - dates[0].getTime() - (dates[1].getTimezoneOffset() * 60 * 1000) + (dates[0].getTimezoneOffset() * 60 * 1000));
+    console.log("dateDelta =",dateDelta);
+    const newXStep = ((timeStep * columnWidth) / dateDelta);
     setXStep(newXStep);
   }, [columnWidth, dates, timeStep]);
 
@@ -127,10 +130,7 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
         rtl
       );
 
-      const isNotLikeOriginal =
-        originalSelectedTask.start !== newChangedTask.start ||
-        originalSelectedTask.end !== newChangedTask.end ||
-        originalSelectedTask.progress !== newChangedTask.progress;
+      const isNotLikeOriginal = ( (originalSelectedTask.start!==newChangedTask.start) || (originalSelectedTask.end!==newChangedTask.end) || (originalSelectedTask.progress!==newChangedTask.progress) );
 
       // remove listeners
       svg.current.removeEventListener("mousemove", handleMouseMove);
@@ -140,16 +140,9 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
 
       // custom operation start
       let operationSuccess = true;
-      if (
-        (action === "move" || action === "end" || action === "start") &&
-        onDateChange &&
-        isNotLikeOriginal
-      ) {
+      if ( (action === "move" || action === "end" || action === "start") && onDateChange && isNotLikeOriginal ) {
         try {
-          const result = await onDateChange(
-            newChangedTask,
-            newChangedTask.barChildren
-          );
+          const result = await onDateChange(newChangedTask, newChangedTask.barChildren);
           if (result !== undefined) {
             operationSuccess = result;
           }
@@ -194,6 +187,7 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
     initEventX1Delta,
     onProgressChange,
     timeStep,
+    // excludeWeekdays,
     onDragChange,
     onDateChange,
     svg,
@@ -285,6 +279,8 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
                 rowHeight={rowHeight}
                 taskHeight={taskHeight}
                 arrowIndent={arrowIndent}
+                arrowLineRadius={arrowLineRadius}
+                arrowLineStroke={arrowLineStroke}
                 rtl={rtl}
               />
             );

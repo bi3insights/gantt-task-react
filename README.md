@@ -81,6 +81,7 @@ npm start
 | onProgressChange\* | (task: Task, children: Task[]) => void/boolean/Promise<void>/Promise<boolean> | Specifies the function to be executed when drag taskbar progress event has finished.    |
 | onExpanderClick\*  | onExpanderClick: (task: Task) => void;                                        | Specifies the function to be executed on the table expander click                       |
 | timeStep           | number                                                                        | A time step value for onDateChange. Specify in milliseconds.                            |
+| excludeWeekdays    | array - Example: excludeWeekdays={[0,6]}                                      | Days of the week to skip-over when dragging tasks.                                      |
 
 \* Chart undoes operation if method return false or error. Parameter children returns one level deep records.
 
@@ -103,7 +104,7 @@ npm start
 | columnWidth                | number | Specifies the time period width.                                                               |
 | listCellWidth              | string | Specifies the task list cell width. Empty string is mean "no display".                         |
 | rowHeight                  | number | Specifies the task row height.                                                                 |
-| barCornerRadius            | number | Specifies the taskbar corner rounding.                                                         |
+| barCornerRadius            | number | Specifies the taskbar corner rounding in px.                                                   |
 | barFill                    | number | Specifies the taskbar occupation. Sets in percent from 0 to 100.                               |
 | handleWidth                | number | Specifies width the taskbar drag event control for start and end dates.                        |
 | fontFamily                 | string | Specifies the application font.                                                                |
@@ -114,6 +115,8 @@ npm start
 | barBackgroundSelectedColor | string | Specifies the taskbar background fill color globally on select.                                |
 | arrowColor                 | string | Specifies the relationship arrow fill color.                                                   |
 | arrowIndent                | number | Specifies the relationship arrow right indent. Sets in px                                      |
+| arrowLineStroke            | number | Specifies the arrow line svg stroke (width) in px.                                             |
+| arrowLineRadius            | number | Specifies the arrow line corner rounding in px.                                                |
 | todayColor                 | string | Specifies the current period column fill color.                                                |
 | TooltipContent             |        | Specifies the Tooltip view for selected taskbar.                                               |
 | TaskListHeader             |        | Specifies the task list Header view                                                            |

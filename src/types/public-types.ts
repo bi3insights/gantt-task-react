@@ -39,6 +39,10 @@ export interface EventOption {
    */
   timeStep?: number;
   /**
+   * Days of the week to shift-over.
+   */
+  // excludeWeekdays?: Array<number>;
+  /**
    * Invokes on bar select on unselect.
    */
   onSelect?: (task: Task, isSelected: boolean) => void;
@@ -119,6 +123,8 @@ export interface StylingOption {
   milestoneBackgroundSelectedColor?: string;
   arrowColor?: string;
   arrowIndent?: number;
+  arrowLineRadius?: number;
+  arrowLineStroke?: number;
   todayColor?: string;
   TooltipContent?: React.FC<{
     task: Task;
