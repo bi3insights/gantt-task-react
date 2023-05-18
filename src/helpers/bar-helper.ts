@@ -8,6 +8,7 @@ export const convertToBarTasks = (
   columnWidth: number,
   rowHeight: number,
   taskHeight: number,
+  excludeWeekdays: number[],
   barCornerRadius: number,
   handleWidth: number,
   rtl: boolean,
@@ -30,6 +31,7 @@ export const convertToBarTasks = (
       columnWidth,
       rowHeight,
       taskHeight,
+      excludeWeekdays,
       barCornerRadius,
       handleWidth,
       rtl,
@@ -68,6 +70,7 @@ const convertToBarTask = (
   columnWidth: number,
   rowHeight: number,
   taskHeight: number,
+  excludeWeekdays: number[],
   barCornerRadius: number,
   handleWidth: number,
   rtl: boolean,
@@ -106,6 +109,7 @@ const convertToBarTask = (
         columnWidth,
         rowHeight,
         taskHeight,
+        excludeWeekdays,
         barCornerRadius,
         handleWidth,
         rtl,
@@ -123,6 +127,7 @@ const convertToBarTask = (
         columnWidth,
         rowHeight,
         taskHeight,
+        excludeWeekdays,
         barCornerRadius,
         handleWidth,
         rtl,
@@ -143,6 +148,7 @@ const convertToBar = (
   columnWidth: number,
   rowHeight: number,
   taskHeight: number,
+  excludeWeekdays: number[],
   barCornerRadius: number,
   handleWidth: number,
   rtl: boolean,
@@ -153,6 +159,29 @@ const convertToBar = (
 ): BarTask => {
   let x1: number;
   let x2: number;
+  // Try applying
+  console.log("IN convertToBar -> excludeWeekdays =", excludeWeekdays);
+  if (!!excludeWeekdays.length) {
+    // xdate.setDate((new Date()).getDate()-5); var counter = 0; while ([0,6].includes(xdate.getDay())) { console.log("includes day =",[0,6].includes(xdate.getDay()), xdate.getDay(), "xdate =",xdate); xdate.setDate(xdate.getDate()+1); ++counter; if(counter>5){break;} }
+    // If start date is on an excluded DOW, push it out:
+    let counter1 = 0;
+    while ([0,6].includes(task.start.getDay())) {
+      task.start.setDate(task.start.getDate()+(rtl?-1:1));
+      ++counter1;
+      if(counter1>6){break;} // If all 7 weekdays [0,1,2,3,4,5,6] are in the excludeWeekdays array, or something else broke, prevent looping more than 7 times.
+    }
+    // If start date was pushed, shift end date the same:
+    if (counter1>0) {
+      task.end.setDate(task.end.getDate()+(rtl?-counter1:counter1));
+    }
+    // Now if the chifted end-date is on an excluded DOW, push it out:
+    let counter2 = 0;
+    while ([0,6].includes(task.end.getDay())) {
+      task.end.setDate(task.end.getDate()+(rtl?-1:1));
+      ++counter2;
+      if(counter2>6){break;} // If all 7 weekdays [0,1,2,3,4,5,6] are in the excludeWeekdays array, or something else broke, prevent looping more than 7 times.
+    }
+  }
   if (rtl) {
     x2 = taskXCoordinateRTL(task.start, dates, columnWidth);
     x1 = taskXCoordinateRTL(task.end, dates, columnWidth);
@@ -247,16 +276,17 @@ const convertToMilestone = (
 };
 
 const taskXCoordinate = (xDate: Date, dates: Date[], columnWidth: number) => {
+  // Try applying excludeWeekdays here:
   const index = dates.findIndex(d => d.getTime() >= xDate.getTime()) - 1;
   const remainderMillis = xDate.getTime() - dates[index].getTime();
   const percentOfInterval = remainderMillis / (dates[index + 1].getTime() - dates[index].getTime());
-  const x = index * columnWidth + percentOfInterval * columnWidth;
+  const x = ((index * columnWidth) + (percentOfInterval * columnWidth));
   return x;
 };
 const taskXCoordinateRTL = (
   xDate: Date,
   dates: Date[],
-  columnWidth: number
+  columnWidth: number,
 ) => {
   let x = taskXCoordinate(xDate, dates, columnWidth);
   x += columnWidth;
@@ -354,6 +384,7 @@ const endByX = (x: number, xStep: number, task: BarTask) => {
 };
 
 const moveByX = (x: number, xStep: number, task: BarTask) => {
+  // Try applying excludeWeekdays here:
   const steps = Math.round((x - task.x1) / xStep);
   const additionalXValue = steps * xStep;
   const newX1 = task.x1 + additionalXValue;
@@ -526,6 +557,7 @@ const handleTaskBySVGMouseEventForBar = (
           xStep,
           timeStep
         );
+        // Try applying
         changedTask.end = dateByX(
           newMoveX2,
           selectedTask.x2,

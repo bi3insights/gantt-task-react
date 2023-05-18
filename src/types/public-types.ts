@@ -39,9 +39,9 @@ export interface EventOption {
    */
   timeStep?: number;
   /**
-   * Days of the week to shift-over.
+   * Days of week to shift-over.
    */
-  // excludeWeekdays?: Array<number>;
+  excludeWeekdays?: number[];
   /**
    * Invokes on bar select on unselect.
    */

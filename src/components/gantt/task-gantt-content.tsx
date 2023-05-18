@@ -19,7 +19,7 @@ export type TaskGanttContentProps = {
   rowHeight: number;
   columnWidth: number;
   timeStep: number;
-  // excludeWeekdays: Array<number>;
+  excludeWeekdays?: number[];
   svg?: React.RefObject<SVGSVGElement>;
   svgWidth: number;
   taskHeight: number;
@@ -43,7 +43,7 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
   rowHeight,
   columnWidth,
   timeStep,
-  // excludeWeekdays,
+  excludeWeekdays,
   svg,
   taskHeight,
   arrowColor,
@@ -71,7 +71,6 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
   // create xStep
   useEffect(() => {
     const dateDelta = (dates[1].getTime() - dates[0].getTime() - (dates[1].getTimezoneOffset() * 60 * 1000) + (dates[0].getTimezoneOffset() * 60 * 1000));
-    console.log("dateDelta =",dateDelta);
     const newXStep = ((timeStep * columnWidth) / dateDelta);
     setXStep(newXStep);
   }, [columnWidth, dates, timeStep]);
@@ -187,7 +186,7 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
     initEventX1Delta,
     onProgressChange,
     timeStep,
-    // excludeWeekdays,
+    excludeWeekdays,
     onDragChange,
     onDateChange,
     svg,
