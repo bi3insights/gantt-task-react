@@ -23,7 +23,8 @@ export const Arrow: React.FC<ArrowProps> = ({
 }) => {
   let path: string;
   let trianglePoints: string;
-  console.log("rtl =", rtl);
+  const safeStrokeWidth = (!arrowLineStroke || arrowLineStroke < 0.5 ? 0.5 : (arrowLineStroke > 5 ? 5 : arrowLineStroke));
+
   if (rtl) {
     [path, trianglePoints] = drownPathAndTriangleRTL(
       taskFrom,
@@ -32,6 +33,7 @@ export const Arrow: React.FC<ArrowProps> = ({
       taskHeight,
       arrowIndent,
       // arrowLineRadius,
+      // safeStrokeWidth,
     );
   } else {
     [path, trianglePoints] = drownPathAndTriangle(
@@ -41,15 +43,16 @@ export const Arrow: React.FC<ArrowProps> = ({
       taskHeight,
       arrowIndent,
       arrowLineRadius,
+      safeStrokeWidth,
     );
   }
 
   return (
     <g className="arrow">
-      <path strokeWidth={(!arrowLineStroke || arrowLineStroke < 0.5 ? 0.5 : (arrowLineStroke > 5 ? 5 : arrowLineStroke))}
+      <path strokeWidth={safeStrokeWidth}
         d={path}
         fill="none"
-        stroke-linejoin="round" />
+        strokeLinejoin="round" />
       <polygon points={trianglePoints} />
     </g>
   );
@@ -62,6 +65,7 @@ const drownPathAndTriangle = (
   taskHeight: number,
   arrowIndent: number,
   arrowLineRadius: number,
+  safeStrokeWidth: number,
 ) => {
   /* EXAMPLES OF CHANGES -- THROW THIS INTO https://codepen.io/pen/ to test:
   <!-- ORIGNAL: -->
@@ -101,28 +105,24 @@ const drownPathAndTriangle = (
     </g>
   </svg>
   */
-  console.log("rtl =", false);
-  const safeRadius = (arrowLineRadius < 0 || arrowLineRadius > (taskHeight/2) ? (taskHeight/2) : arrowLineRadius);
-  const safeIndent = (arrowIndent < 0 || arrowIndent < safeRadius ? safeRadius : arrowIndent);
+  const safeRadius = (arrowLineRadius < 0 ? 0 : (arrowLineRadius > (taskHeight/2) ? (taskHeight/2) : arrowLineRadius));
+  const safeIndent = (arrowIndent < safeRadius*2 ? safeRadius*2 : (arrowIndent < 8 ? 8 : arrowIndent));
   const indexCompare = (taskFrom.index > taskTo.index ? -1 : 1);
-  const taskToEndPosition = (taskTo.y + (taskHeight / 2)) - (safeRadius*2);
+  const taskToEndPosition = (taskTo.y + (taskHeight / 2));
   const taskFromEndPosition = taskFrom.x2 + safeIndent * 2;
   const taskFromHorizontalOffsetValue = ((taskFromEndPosition < taskTo.x1) ? "" : `H ${taskTo.x1 - safeIndent + safeRadius}`);
-  const taskToHorizontalOffsetValue = ((taskFromEndPosition > taskTo.x1) ? safeIndent : taskTo.x1 - taskFrom.x2 - safeIndent - safeRadius);
+  const taskToHorizontalOffsetValue = (((taskFromEndPosition > taskTo.x1) ? safeIndent : (taskTo.x1 - taskFrom.x2 - safeIndent)) - safeStrokeWidth);
   const path = `M ${taskFrom.x2-safeRadius} ${taskFrom.y + taskHeight / 2}
-  h ${safeIndent-safeRadius}
-  a ${safeRadius} ${safeRadius} 0 0 1 ${safeRadius} ${safeRadius}
-  v ${((indexCompare * rowHeight) / 2) - (safeRadius*2)}${!!taskFromHorizontalOffsetValue ? `
-  a ${safeRadius} ${safeRadius} 0 0 1 -${safeRadius} ${safeRadius}` : ""}${!!taskFromHorizontalOffsetValue ? `
-  ${taskFromHorizontalOffsetValue}` : ""}${!!taskFromHorizontalOffsetValue ? `
-  a ${safeRadius} ${safeRadius} 0 0 0 -${safeRadius} ${safeRadius}` : ""}
-  V ${taskToEndPosition}
-  a ${safeRadius} ${safeRadius} 0 0 0 ${safeRadius} ${safeRadius}
-  h ${taskToHorizontalOffsetValue}`;
-  console.log(path);
-  const trianglePoints = `${taskTo.x1},${taskToEndPosition}
-  ${taskTo.x1 - 5},${taskToEndPosition - 5}
-  ${taskTo.x1 - 5},${taskToEndPosition + 5}`;
+    h ${safeIndent-safeRadius}
+    a ${safeRadius} ${safeRadius} 0 0 1 ${safeRadius} ${safeRadius}
+    v ${((indexCompare * rowHeight) / 2) - (safeRadius*2)}${!!taskFromHorizontalOffsetValue ? `
+    a ${safeRadius} ${safeRadius} 0 0 1 -${safeRadius} ${safeRadius}` : ""}${!!taskFromHorizontalOffsetValue ? `
+    ${taskFromHorizontalOffsetValue}` : ""}${!!taskFromHorizontalOffsetValue ? `
+    a ${safeRadius} ${safeRadius} 0 0 0 -${safeRadius} ${safeRadius}` : ""}
+    V ${taskToEndPosition - safeRadius}
+    a ${safeRadius} ${safeRadius} 0 0 0 ${safeRadius} ${safeRadius}
+    h ${taskToHorizontalOffsetValue}`;
+  const trianglePoints = `${taskTo.x1},${taskToEndPosition} ${taskTo.x1 - 5},${taskToEndPosition - 5} ${taskTo.x1 - 5},${taskToEndPosition + 5}`;
   return [path, trianglePoints];
 };
 
@@ -133,27 +133,19 @@ const drownPathAndTriangleRTL = (
   taskHeight: number,
   arrowIndent: number,
   // arrowLineRadius: number,  // NOT IMPLEMENTED YET!
+  // safeStrokeWidth: number,  // NOT IMPLEMENTED YET!
 ) => {
-  console.log("rtl =", true);
-  const indexCompare = taskFrom.index > taskTo.index ? -1 : 1;
-  const taskToEndPosition = taskTo.y + taskHeight / 2;
-  const taskFromEndPosition = taskFrom.x1 - arrowIndent * 2;
-  const taskFromHorizontalOffsetValue =
-    taskFromEndPosition > taskTo.x2 ? "" : `H ${taskTo.x2 + arrowIndent}`;
-  const taskToHorizontalOffsetValue =
-    taskFromEndPosition < taskTo.x2
-      ? -arrowIndent
-      : taskTo.x2 - taskFrom.x1 + arrowIndent;
-
-  const path = `  M ${taskFrom.x1} ${taskFrom.y + taskHeight / 2}
-  h ${-arrowIndent}
-  v ${(indexCompare * rowHeight) / 2}
-  ${taskFromHorizontalOffsetValue}
-  V ${taskToEndPosition}
-  h ${taskToHorizontalOffsetValue}`;
-
-  const trianglePoints = `${taskTo.x2},${taskToEndPosition}
-  ${taskTo.x2 + 5},${taskToEndPosition + 5}
-  ${taskTo.x2 + 5},${taskToEndPosition - 5}`;
+  const indexCompare = (taskFrom.index > taskTo.index ? -1 : 1);
+  const taskToEndPosition = (taskTo.y + (taskHeight / 2));
+  const taskFromEndPosition = (taskFrom.x1 - (arrowIndent * 2));
+  const taskFromHorizontalOffsetValue = (taskFromEndPosition > taskTo.x2 ? "" : `H ${taskTo.x2 + arrowIndent}`);
+  const taskToHorizontalOffsetValue = (taskFromEndPosition < taskTo.x2 ? -arrowIndent : (taskTo.x2 - taskFrom.x1 + arrowIndent));
+  const path = `M ${taskFrom.x1} ${taskFrom.y + taskHeight / 2}
+    h ${-arrowIndent}
+    v ${(indexCompare * rowHeight) / 2}
+    ${taskFromHorizontalOffsetValue}
+    V ${taskToEndPosition}
+    h ${taskToHorizontalOffsetValue}`;
+  const trianglePoints = `${taskTo.x2},${taskToEndPosition} ${taskTo.x2 + 5},${taskToEndPosition + 5} ${taskTo.x2 + 5},${taskToEndPosition - 5}`;
   return [path, trianglePoints];
 };

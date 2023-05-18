@@ -114,9 +114,9 @@ npm start
 | barBackgroundColor         | string | Specifies the taskbar background fill color globally.                                          |
 | barBackgroundSelectedColor | string | Specifies the taskbar background fill color globally on select.                                |
 | arrowColor                 | string | Specifies the relationship arrow fill color.                                                   |
-| arrowIndent                | number | Specifies the relationship arrow right indent. Sets in px                                      |
-| arrowLineStroke            | number | Specifies the arrow line svg stroke (width) in px.                                             |
-| arrowLineRadius            | number | Specifies the arrow line corner rounding in px.                                                |
+| arrowIndent                | number | Specifies the relationship arrow right indent in px. Minimum 8.                                |
+| arrowLineStroke            | number | Specifies the arrow line svg stroke (width) in px. Min=0.5 Max=5.                              |
+| arrowLineRadius            | number | Specifies the arrow line corner rounding in px. Minimum 8 or 2*arrowIndent.                    |
 | todayColor                 | string | Specifies the current period column fill color.                                                |
 | TooltipContent             |        | Specifies the Tooltip view for selected taskbar.                                               |
 | TaskListHeader             |        | Specifies the task list Header view                                                            |
