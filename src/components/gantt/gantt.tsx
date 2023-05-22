@@ -111,12 +111,14 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
       filteredTasks = tasks;
     }
     filteredTasks = filteredTasks.sort(sortTasks);
+    // console.log("dateSetup =",dateSetup);
     const [startDate, endDate] = ganttDateRange(
       filteredTasks,
       viewMode,
       preStepsCount
     );
     let newDates = seedDates(startDate, endDate, viewMode);
+    console.log("newDates =",newDates);
     if (rtl) {
       newDates = newDates.reverse();
       if (scrollX === -1) {
@@ -170,6 +172,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     rtl,
     scrollX,
     onExpanderClick,
+    // dateSetup
   ]);
 
   useEffect(() => {

@@ -19,7 +19,7 @@ export type TaskGanttContentProps = {
   rowHeight: number;
   columnWidth: number;
   timeStep: number;
-  excludeWeekdays?: number[];
+  excludeWeekdays: number[];
   svg?: React.RefObject<SVGSVGElement>;
   svgWidth: number;
   taskHeight: number;
@@ -91,6 +91,7 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
         ganttEvent.changedTask,
         xStep,
         timeStep,
+        excludeWeekdays,
         initEventX1Delta,
         rtl
       );
@@ -125,6 +126,7 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
         changedTask,
         xStep,
         timeStep,
+        excludeWeekdays,
         initEventX1Delta,
         rtl
       );

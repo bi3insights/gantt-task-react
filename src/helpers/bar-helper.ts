@@ -141,6 +141,41 @@ const convertToBarTask = (
   return barTask;
 };
 
+const getWorkDays = (start:Date, end:Date, excludeWeekdays:number[]) => {
+  let loop_duration = 0;
+  let loop_date_end = new Date(start);
+  while (loop_date_end<end) {
+    if (!excludeWeekdays.includes(loop_date_end.getDay())) {
+      ++loop_duration;  // Increment/Count working days not being excluded until task.days_duration is reached.
+    }
+    loop_date_end.setDate(loop_date_end.getDate()+1);
+  }
+  return loop_duration
+};
+
+const convertTaskWorkDays = (excludeWeekdays:number[], task:Task, backshift:boolean) => {
+  // Try applying
+  if (excludeWeekdays.length>0 && excludeWeekdays.length<4) {
+    // If start date is on an excluded DOW, push it out:
+    let counter1 = 0;
+    while ([0,6].includes(task.start.getDay())) {
+      task.start.setDate(task.start.getDate()+(backshift?-1:1));
+      ++counter1;
+      if(counter1>6){break;} // If all 7 weekdays [0,1,2,3,4,5,6] are in the excludeWeekdays array, or something else broke, prevent looping more than 7 times.
+    }
+    let loop_duration = 1;
+    let loop_task_end = new Date(task.start);
+    while (loop_duration<task.days_duration) {
+      loop_task_end.setDate(loop_task_end.getDate()+1);  // Only increment one day at a time.
+      if (!excludeWeekdays.includes(loop_task_end.getDay())) {
+        ++loop_duration;  // Increment/Count working days not being excluded until task.days_duration is reached.
+      }
+    }
+    task.end = new Date(loop_task_end);
+  }
+  return [task.start,task.end]
+};
+
 const convertToBar = (
   task: Task,
   index: number,
@@ -157,31 +192,11 @@ const convertToBar = (
   barBackgroundColor: string,
   barBackgroundSelectedColor: string
 ): BarTask => {
+  [task.start,task.end] = convertTaskWorkDays(excludeWeekdays,task,false);
+  task.start.setHours(0,0,0,0);
+  task.end.setHours(23,59,59,0);
   let x1: number;
   let x2: number;
-  // Try applying
-  console.log("IN convertToBar -> excludeWeekdays =", excludeWeekdays);
-  if (!!excludeWeekdays.length) {
-    // xdate.setDate((new Date()).getDate()-5); var counter = 0; while ([0,6].includes(xdate.getDay())) { console.log("includes day =",[0,6].includes(xdate.getDay()), xdate.getDay(), "xdate =",xdate); xdate.setDate(xdate.getDate()+1); ++counter; if(counter>5){break;} }
-    // If start date is on an excluded DOW, push it out:
-    let counter1 = 0;
-    while ([0,6].includes(task.start.getDay())) {
-      task.start.setDate(task.start.getDate()+(rtl?-1:1));
-      ++counter1;
-      if(counter1>6){break;} // If all 7 weekdays [0,1,2,3,4,5,6] are in the excludeWeekdays array, or something else broke, prevent looping more than 7 times.
-    }
-    // If start date was pushed, shift end date the same:
-    if (counter1>0) {
-      task.end.setDate(task.end.getDate()+(rtl?-counter1:counter1));
-    }
-    // Now if the chifted end-date is on an excluded DOW, push it out:
-    let counter2 = 0;
-    while ([0,6].includes(task.end.getDay())) {
-      task.end.setDate(task.end.getDate()+(rtl?-1:1));
-      ++counter2;
-      if(counter2>6){break;} // If all 7 weekdays [0,1,2,3,4,5,6] are in the excludeWeekdays array, or something else broke, prevent looping more than 7 times.
-    }
-  }
   if (rtl) {
     x2 = taskXCoordinateRTL(task.start, dates, columnWidth);
     x1 = taskXCoordinateRTL(task.end, dates, columnWidth);
@@ -416,6 +431,7 @@ export const handleTaskBySVGMouseEvent = (
   selectedTask: BarTask,
   xStep: number,
   timeStep: number,
+  excludeWeekdays: number[],
   initEventX1Delta: number,
   rtl: boolean
 ): { isChanged: boolean; changedTask: BarTask } => {
@@ -438,6 +454,7 @@ export const handleTaskBySVGMouseEvent = (
         selectedTask,
         xStep,
         timeStep,
+        excludeWeekdays,
         initEventX1Delta,
         rtl
       );
@@ -452,6 +469,7 @@ const handleTaskBySVGMouseEventForBar = (
   selectedTask: BarTask,
   xStep: number,
   timeStep: number,
+  excludeWeekdays: number[],
   initEventX1Delta: number,
   rtl: boolean
 ): { isChanged: boolean; changedTask: BarTask } => {
@@ -498,6 +516,10 @@ const handleTaskBySVGMouseEventForBar = (
             timeStep
           );
         }
+        // Try applying
+        changedTask.days_duration = getWorkDays(changedTask.start,changedTask.end,excludeWeekdays);
+        const backshift = (selectedTask.x1>newX1?true:false);
+        [changedTask.start,changedTask.end] = convertTaskWorkDays(excludeWeekdays,changedTask,backshift);
         const [progressWidth, progressX] = progressWithByParams(
           changedTask.x1,
           changedTask.x2,
@@ -531,6 +553,11 @@ const handleTaskBySVGMouseEventForBar = (
             timeStep
           );
         }
+        // Try applying
+        changedTask.days_duration = getWorkDays(changedTask.start,changedTask.end,excludeWeekdays);
+        const backshift = (selectedTask.x2>newX2?true:false);
+        [changedTask.start,changedTask.end] = convertTaskWorkDays(excludeWeekdays,changedTask,backshift);
+        console.log("days_duration =",changedTask.days_duration,"changedTask.start =",changedTask.start,"changedTask.end =",changedTask.end);
         const [progressWidth, progressX] = progressWithByParams(
           changedTask.x1,
           changedTask.x2,
@@ -557,7 +584,6 @@ const handleTaskBySVGMouseEventForBar = (
           xStep,
           timeStep
         );
-        // Try applying
         changedTask.end = dateByX(
           newMoveX2,
           selectedTask.x2,
@@ -565,14 +591,13 @@ const handleTaskBySVGMouseEventForBar = (
           xStep,
           timeStep
         );
+        // Try applying
+        const backshift = (selectedTask.x1>newMoveX1?true:false);
+        [changedTask.start,changedTask.end] = convertTaskWorkDays(excludeWeekdays,changedTask,backshift);
+        console.log("backshift =",backshift,"changedTask.start =",changedTask.start,"changedTask.end =",changedTask.end);
         changedTask.x1 = newMoveX1;
         changedTask.x2 = newMoveX2;
-        const [progressWidth, progressX] = progressWithByParams(
-          changedTask.x1,
-          changedTask.x2,
-          changedTask.progress,
-          rtl
-        );
+        const [progressWidth, progressX] = progressWithByParams(changedTask.x1,changedTask.x2,changedTask.progress,rtl);
         changedTask.progressWidth = progressWidth;
         changedTask.progressX = progressX;
       }
