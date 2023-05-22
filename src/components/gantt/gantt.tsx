@@ -33,7 +33,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   ganttHeight = 0,
   viewMode = ViewMode.Day,
   preStepsCount = 1,
-  locale = "en-GB",
+  locale = "en-US",
   barFill = 60,
   barCornerRadius = 3,
   barProgressColor = "#a3a3ff",
@@ -72,10 +72,14 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
 }) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const taskListRef = useRef<HTMLDivElement>(null);
-  const [dateSetup, setDateSetup] = useState<DateSetup>(() => {
-    const [startDate, endDate] = ganttDateRange(tasks, viewMode, preStepsCount);
+  const [dateRange, ] = useState<Date[]>(() => {
+    return ganttDateRange(tasks, viewMode, preStepsCount);
+  });
+  const [dateSetup, ] = useState<DateSetup>(() => {
+    const [startDate, endDate] = dateRange;
     return { viewMode, dates: seedDates(startDate, endDate, viewMode) };
   });
+
   const [currentViewDate, setCurrentViewDate] = useState<Date | undefined>(
     undefined
   );
@@ -104,32 +108,29 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
 
   // task change events
   useEffect(() => {
-    let filteredTasks: Task[];
+    let filteredTasks: Task[] = tasks;
     if (onExpanderClick) {
-      filteredTasks = removeHiddenTasks(tasks);
-    } else {
-      filteredTasks = tasks;
+      filteredTasks = removeHiddenTasks(filteredTasks);
     }
     filteredTasks = filteredTasks.sort(sortTasks);
-    // console.log("dateSetup =",dateSetup);
-    const [startDate, endDate] = ganttDateRange(
-      filteredTasks,
-      viewMode,
-      preStepsCount
-    );
-    let newDates = seedDates(startDate, endDate, viewMode);
-    console.log("newDates =",newDates);
-    if (rtl) {
-      newDates = newDates.reverse();
-      if (scrollX === -1) {
-        setScrollX(newDates.length * columnWidth);
-      }
-    }
-    setDateSetup({ dates: newDates, viewMode });
+    // const [startDate, endDate] = ganttDateRange(
+    //   filteredTasks,
+    //   viewMode,
+    //   preStepsCount
+    // );
+    // let newDates = seedDates(startDate, endDate, viewMode);
+        // // if (rtl) {
+        // //   newDates = newDates.reverse();
+        // //   if (scrollX === -1) {
+        // //     setScrollX(newDates.length * columnWidth);
+        // //   }
+        // // }
+    // setDateSetup({ dates: newDates, viewMode });
     setBarTasks(
       convertToBarTasks(
         filteredTasks,
-        newDates,
+        // newDates,
+        dateSetup.dates,
         columnWidth,
         rowHeight,
         taskHeight,
@@ -169,10 +170,10 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     projectBackgroundSelectedColor,
     milestoneBackgroundColor,
     milestoneBackgroundSelectedColor,
-    rtl,
-    scrollX,
+    // rtl,
+    // scrollX,
     onExpanderClick,
-    // dateSetup
+    dateSetup
   ]);
 
   useEffect(() => {

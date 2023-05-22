@@ -197,20 +197,14 @@ const convertToBar = (
   task.end.setHours(23,59,59,0);
   let x1: number;
   let x2: number;
-  if (rtl) {
-    x2 = taskXCoordinateRTL(task.start, dates, columnWidth);
-    x1 = taskXCoordinateRTL(task.end, dates, columnWidth);
-  } else {
-    x1 = taskXCoordinate(task.start, dates, columnWidth);
-    x2 = taskXCoordinate(task.end, dates, columnWidth);
-  }
+  x1 = taskXCoordinate(task.start, dates, columnWidth);
+  x2 = taskXCoordinate(task.end, dates, columnWidth);
   let typeInternal: TaskTypeInternal = task.type;
   if (typeInternal === "task" && x2 - x1 < handleWidth * 2) {
     typeInternal = "smalltask";
     x2 = x1 + handleWidth * 2;
   }
-
-  const [progressWidth, progressX] = progressWithByParams(
+  const [progressWidth, progressX] = progressWidthByParams(
     x1,
     x2,
     task.progress,
@@ -218,7 +212,6 @@ const convertToBar = (
   );
   const y = taskYCoordinate(index, rowHeight, taskHeight);
   const hideChildren = task.type === "project" ? task.hideChildren : undefined;
-
   const styles = {
     backgroundColor: barBackgroundColor,
     backgroundSelectedColor: barBackgroundSelectedColor,
@@ -290,21 +283,30 @@ const convertToMilestone = (
   };
 };
 
+// const taskXCoordinate = (xDate: Date, dates: Date[], columnWidth: number) => {
+//   // Try applying excludeWeekdays here:
+//   const index = dates.findIndex(d => d.getTime() >= xDate.getTime()) - 1;
+//   const remainderMillis = xDate.getTime() - dates[index].getTime();
+//   const percentOfInterval = remainderMillis / (dates[index + 1].getTime() - dates[index].getTime());
+//   const x = ((index * columnWidth) + (percentOfInterval * columnWidth));
+//   return x;
+// };
+//// The old 'taskXCoordinate' above allowed for partial-days, and therefore had ot calculate that position.
+//// Going forward we are not ever doing less that one-day intervals. Partial-days calculation can be removed and simplified.
 const taskXCoordinate = (xDate: Date, dates: Date[], columnWidth: number) => {
   // Try applying excludeWeekdays here:
-  const index = dates.findIndex(d => d.getTime() >= xDate.getTime()) - 1;
-  const remainderMillis = xDate.getTime() - dates[index].getTime();
-  const percentOfInterval = remainderMillis / (dates[index + 1].getTime() - dates[index].getTime());
-  const x = ((index * columnWidth) + (percentOfInterval * columnWidth));
-  return x;
-};
-const taskXCoordinateRTL = (
-  xDate: Date,
-  dates: Date[],
-  columnWidth: number,
-) => {
-  let x = taskXCoordinate(xDate, dates, columnWidth);
-  x += columnWidth;
+  const index = (dates.findIndex(d => (d.getTime()>=xDate.getTime())) - 1);
+  let x = (index * columnWidth);
+  if (index===-1) {  // Calculate it manually.
+    const datesInterval = (dates[1].getTime()-dates[0].getTime());
+    if (dates[0].getTime()<xDate.getTime()) {
+      x = (((dates[0].getTime()-xDate.getTime())/datesInterval) * columnWidth);
+    }
+    if (dates[0].getTime()<xDate.getTime()) {
+      x = (((xDate.getTime()-dates[dates.length-1].getTime())/datesInterval) * columnWidth);
+    }
+    console.log("taskXCoordinate() --> xDate =", xDate, ", datesInterval =", datesInterval, ", x =",x)
+  }
   return x;
 };
 const taskYCoordinate = (
@@ -316,7 +318,7 @@ const taskYCoordinate = (
   return y;
 };
 
-export const progressWithByParams = (
+export const progressWidthByParams = (
   taskX1: number,
   taskX2: number,
   progress: number,
@@ -484,7 +486,7 @@ const handleTaskBySVGMouseEventForBar = (
       }
       isChanged = changedTask.progress !== selectedTask.progress;
       if (isChanged) {
-        const [progressWidth, progressX] = progressWithByParams(
+        const [progressWidth, progressX] = progressWidthByParams(
           changedTask.x1,
           changedTask.x2,
           changedTask.progress,
@@ -520,7 +522,7 @@ const handleTaskBySVGMouseEventForBar = (
         changedTask.days_duration = getWorkDays(changedTask.start,changedTask.end,excludeWeekdays);
         const backshift = (selectedTask.x1>newX1?true:false);
         [changedTask.start,changedTask.end] = convertTaskWorkDays(excludeWeekdays,changedTask,backshift);
-        const [progressWidth, progressX] = progressWithByParams(
+        const [progressWidth, progressX] = progressWidthByParams(
           changedTask.x1,
           changedTask.x2,
           changedTask.progress,
@@ -558,7 +560,7 @@ const handleTaskBySVGMouseEventForBar = (
         const backshift = (selectedTask.x2>newX2?true:false);
         [changedTask.start,changedTask.end] = convertTaskWorkDays(excludeWeekdays,changedTask,backshift);
         console.log("days_duration =",changedTask.days_duration,"changedTask.start =",changedTask.start,"changedTask.end =",changedTask.end);
-        const [progressWidth, progressX] = progressWithByParams(
+        const [progressWidth, progressX] = progressWidthByParams(
           changedTask.x1,
           changedTask.x2,
           changedTask.progress,
@@ -597,7 +599,7 @@ const handleTaskBySVGMouseEventForBar = (
         console.log("backshift =",backshift,"changedTask.start =",changedTask.start,"changedTask.end =",changedTask.end);
         changedTask.x1 = newMoveX1;
         changedTask.x2 = newMoveX2;
-        const [progressWidth, progressX] = progressWithByParams(changedTask.x1,changedTask.x2,changedTask.progress,rtl);
+        const [progressWidth, progressX] = progressWidthByParams(changedTask.x1,changedTask.x2,changedTask.progress,rtl);
         changedTask.progressWidth = progressWidth;
         changedTask.progressX = progressX;
       }

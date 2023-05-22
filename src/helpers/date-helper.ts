@@ -85,18 +85,18 @@ export const ganttDateRange = (
     }
   }
   switch (viewMode) {
-    case ViewMode.Year:
-      newStartDate = addToDate(newStartDate, -1, "year");
-      newStartDate = startOfDate(newStartDate, "year");
-      newEndDate = addToDate(newEndDate, 1, "year");
-      newEndDate = startOfDate(newEndDate, "year");
-      break;
-    case ViewMode.QuarterYear:
-      newStartDate = addToDate(newStartDate, -3, "month");
-      newStartDate = startOfDate(newStartDate, "month");
-      newEndDate = addToDate(newEndDate, 3, "year");
-      newEndDate = startOfDate(newEndDate, "year");
-      break;
+    // case ViewMode.Year:
+    //   newStartDate = addToDate(newStartDate, -1, "year");
+    //   newStartDate = startOfDate(newStartDate, "year");
+    //   newEndDate = addToDate(newEndDate, 1, "year");
+    //   newEndDate = startOfDate(newEndDate, "year");
+    //   break;
+    // case ViewMode.QuarterYear:
+    //   newStartDate = addToDate(newStartDate, -3, "month");
+    //   newStartDate = startOfDate(newStartDate, "month");
+    //   newEndDate = addToDate(newEndDate, 3, "year");
+    //   newEndDate = startOfDate(newEndDate, "year");
+    //   break;
     case ViewMode.Month:
       newStartDate = addToDate(newStartDate, -1 * preStepsCount, "month");
       newStartDate = startOfDate(newStartDate, "month");
@@ -119,24 +119,24 @@ export const ganttDateRange = (
       newEndDate = startOfDate(newEndDate, "day");
       newEndDate = addToDate(newEndDate, 19, "day");
       break;
-    case ViewMode.QuarterDay:
-      newStartDate = startOfDate(newStartDate, "day");
-      newStartDate = addToDate(newStartDate, -1 * preStepsCount, "day");
-      newEndDate = startOfDate(newEndDate, "day");
-      newEndDate = addToDate(newEndDate, 66, "hour"); // 24(1 day)*3 - 6
-      break;
-    case ViewMode.HalfDay:
-      newStartDate = startOfDate(newStartDate, "day");
-      newStartDate = addToDate(newStartDate, -1 * preStepsCount, "day");
-      newEndDate = startOfDate(newEndDate, "day");
-      newEndDate = addToDate(newEndDate, 108, "hour"); // 24(1 day)*5 - 12
-      break;
-    case ViewMode.Hour:
-      newStartDate = startOfDate(newStartDate, "hour");
-      newStartDate = addToDate(newStartDate, -1 * preStepsCount, "hour");
-      newEndDate = startOfDate(newEndDate, "day");
-      newEndDate = addToDate(newEndDate, 1, "day");
-      break;
+    // case ViewMode.QuarterDay:
+    //   newStartDate = startOfDate(newStartDate, "day");
+    //   newStartDate = addToDate(newStartDate, -1 * preStepsCount, "day");
+    //   newEndDate = startOfDate(newEndDate, "day");
+    //   newEndDate = addToDate(newEndDate, 66, "hour"); // 24(1 day)*3 - 6
+    //   break;
+    // case ViewMode.HalfDay:
+    //   newStartDate = startOfDate(newStartDate, "day");
+    //   newStartDate = addToDate(newStartDate, -1 * preStepsCount, "day");
+    //   newEndDate = startOfDate(newEndDate, "day");
+    //   newEndDate = addToDate(newEndDate, 108, "hour"); // 24(1 day)*5 - 12
+    //   break;
+    // case ViewMode.Hour:
+    //   newStartDate = startOfDate(newStartDate, "hour");
+    //   newStartDate = addToDate(newStartDate, -1 * preStepsCount, "hour");
+    //   newEndDate = startOfDate(newEndDate, "day");
+    //   newEndDate = addToDate(newEndDate, 1, "day");
+    //   break;
   }
   return [newStartDate, newEndDate];
 };
@@ -150,12 +150,12 @@ export const seedDates = (
   const dates: Date[] = [currentDate];
   while (currentDate < endDate) {
     switch (viewMode) {
-      case ViewMode.Year:
-        currentDate = addToDate(currentDate, 1, "year");
-        break;
-      case ViewMode.QuarterYear:
-        currentDate = addToDate(currentDate, 3, "month");
-        break;
+      // case ViewMode.Year:
+      //   currentDate = addToDate(currentDate, 1, "year");
+      //   break;
+      // case ViewMode.QuarterYear:
+      //   currentDate = addToDate(currentDate, 3, "month");
+      //   break;
       case ViewMode.Month:
         currentDate = addToDate(currentDate, 1, "month");
         break;
@@ -165,15 +165,15 @@ export const seedDates = (
       case ViewMode.Day:
         currentDate = addToDate(currentDate, 1, "day");
         break;
-      case ViewMode.HalfDay:
-        currentDate = addToDate(currentDate, 12, "hour");
-        break;
-      case ViewMode.QuarterDay:
-        currentDate = addToDate(currentDate, 6, "hour");
-        break;
-      case ViewMode.Hour:
-        currentDate = addToDate(currentDate, 1, "hour");
-        break;
+      // case ViewMode.HalfDay:
+      //   currentDate = addToDate(currentDate, 12, "hour");
+      //   break;
+      // case ViewMode.QuarterDay:
+      //   currentDate = addToDate(currentDate, 6, "hour");
+      //   break;
+      // case ViewMode.Hour:
+      //   currentDate = addToDate(currentDate, 1, "hour");
+      //   break;
     }
     dates.push(currentDate);
   }
