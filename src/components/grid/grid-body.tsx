@@ -66,7 +66,6 @@ export const GridBody: React.FC<GridBodyProps> = ({
   const ticks: ReactChild[] = [];
   let today: ReactChild = <rect />;
   let weekends: [ReactChild] = [<rect />];
-  // const showWeekends = ((((dates[0].valueOf())-(dates[1].valueOf()))/24/60/60/1000)===-1);  // Only show gray-column weekends when in Day view - when the first two dates consecutive.
   const showWeekends = (viewMode===ViewMode.Day);  // Only show gray-column weekends when in Day view - when the first two dates consecutive.
   for (let i = 0; i < dates.length; i++) {
     const date = dates[i];
@@ -110,12 +109,11 @@ export const GridBody: React.FC<GridBodyProps> = ({
     tickX += columnWidth;
 
     // Gray-out weekends columns
-    // if (!!showWeekends && [5,6].includes(date.getDay())) {
     if (!!showWeekends && excludeWeekdays.includes(date.getDay())) {
       weekends.push(
         <rect
           key={`${date.getFullYear()}${date.getMonth()}${date.getDate()}`}
-          x={tickX}
+          x={tickX-columnWidth}
           y={0}
           width={columnWidth}
           height={y}
