@@ -158,7 +158,7 @@ const convertTaskWorkDays = (excludeWeekdays:number[], task:Task, backshift:bool
   if (excludeWeekdays.length>0 && excludeWeekdays.length<4) {
     // If start date is on an excluded DOW, push it out:
     let counter1 = 0;
-    while ([0,6].includes(task.start.getDay())) {
+    while (excludeWeekdays.includes(task.start.getDay())) {
       task.start.setDate(task.start.getDate()+(backshift?-1:1));
       ++counter1;
       if(counter1>6){break;} // If all 7 weekdays [0,1,2,3,4,5,6] are in the excludeWeekdays array, or something else broke, prevent looping more than 7 times.

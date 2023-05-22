@@ -399,11 +399,13 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     }
   };
   const gridProps: GridProps = {
-    columnWidth,
-    svgWidth,
     tasks: tasks,
-    rowHeight,
     dates: dateSetup.dates,
+    viewMode: viewMode,
+    excludeWeekdays: excludeWeekdays,
+    rowHeight,
+    svgWidth,
+    columnWidth,
     todayColor,
     rtl,
   };
