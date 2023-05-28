@@ -117,7 +117,7 @@ export const ganttDateRange = (
       newStartDate = startOfDate(newStartDate, "day");
       newStartDate = addToDate(newStartDate, -1 * preStepsCount, "day");
       newEndDate = startOfDate(newEndDate, "day");
-      newEndDate = addToDate(newEndDate, 19, "day");
+      newEndDate = addToDate(newEndDate, 31, "day");
       break;
     // case ViewMode.QuarterDay:
     //   newStartDate = startOfDate(newStartDate, "day");
@@ -212,7 +212,7 @@ export const getLocalDayOfWeek = (
  */
 const getMonday = (date: Date) => {
   const day = date.getDay();
-  const diff = date.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is Sunday
   return new Date(date.setDate(diff));
 };
 
@@ -238,4 +238,11 @@ export const getWeekNumberISO8601 = (date: Date) => {
 
 export const getDaysInMonth = (month: number, year: number) => {
   return new Date(year, month + 1, 0).getDate();
+};
+
+export const getDaysDiff = (a: Date, b: Date) => {
+  let _a:number = new Date(a.getFullYear(), a.getMonth(), a.getDate()).valueOf();
+  let _b:number = new Date(b.getFullYear(), b.getMonth(), b.getDate()).valueOf();
+  return (((((_b - _a) / 1000) / 60) / 60) / 24);
+
 };

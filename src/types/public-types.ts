@@ -15,11 +15,10 @@ export interface Task {
   type: TaskType;
   name: string;
   start: Date;
+  startCache: Date;
   end: Date;
-  /**
-   * From 0 to 100
-   */
-  progress: number;
+  endCache: Date;
+  progress: number;  // % From 0 to 100
   days_duration: number;
   styles?: {
     backgroundColor?: string;
@@ -32,6 +31,7 @@ export interface Task {
   dependencies?: string[];
   hideChildren?: boolean;
   displayOrder?: number;
+  taskChildren?: Task[];
 }
 
 export interface EventOption {
@@ -156,4 +156,5 @@ export interface StylingOption {
 
 export interface GanttProps extends EventOption, DisplayOption, StylingOption {
   tasks: Task[];
+  rerender: Function;
 }

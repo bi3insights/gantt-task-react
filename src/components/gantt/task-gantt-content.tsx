@@ -95,6 +95,7 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
         initEventX1Delta,
         rtl
       );
+      console.log("handleMouseMove -> isChanged, changedTask ===>", isChanged, changedTask);
       if (isChanged) {
         setGanttEvent({ action: ganttEvent.action, changedTask });
         if (!!onDragChange) {
@@ -132,6 +133,7 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
       );
 
       const isNotLikeOriginal = ( (originalSelectedTask.start!==newChangedTask.start) || (originalSelectedTask.end!==newChangedTask.end) || (originalSelectedTask.progress!==newChangedTask.progress) );
+      console.log("handleMouseUp -> isChanged, changedTask ===>", isNotLikeOriginal, newChangedTask);
 
       // remove listeners
       svg.current.removeEventListener("mousemove", handleMouseMove);
@@ -142,6 +144,7 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
       // custom operation start
       let operationSuccess = true;
       if ( (action === "move" || action === "end" || action === "start") && onDateChange && isNotLikeOriginal ) {
+        console.log("^^^ handleMouseUp -> 11111");
         try {
           const result = await onDateChange(newChangedTask, newChangedTask.barChildren);
           if (result !== undefined) {
@@ -151,6 +154,7 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
           operationSuccess = false;
         }
       } else if (onProgressChange && isNotLikeOriginal) {
+        console.log("^^^ handleMouseUp -> 22222");
         try {
           const result = await onProgressChange(
             newChangedTask,

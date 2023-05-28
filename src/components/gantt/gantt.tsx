@@ -61,6 +61,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   TooltipContent = StandardTooltipContent,
   TaskListHeader = TaskListHeaderDefault,
   TaskListTable = TaskListTableDefault,
+  // rerender,
   onDragChange,
   onDateChange,
   onProgressChange,
@@ -70,15 +71,23 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   onSelect,
   onExpanderClick,
 }) => {
+  // const initialized = useRef<boolean>(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const taskListRef = useRef<HTMLDivElement>(null);
-  const [dateRange, ] = useState<Date[]>(() => {
-    return ganttDateRange(tasks, viewMode, preStepsCount);
-  });
-  const [dateSetup, ] = useState<DateSetup>(() => {
-    const [startDate, endDate] = dateRange;
+
+  // TO PREVENT SCROLL-SHIFT EXPANDING CALENDAR RANGE WHILE DRAGGING EVENTS...
+  // Replace this 'const [dateSetup, setDateSetup] =...' with two separate fns below: 'const [dateRange, const [dateSetup, ] =] =...' & ''.
+  const [dateSetup, setDateSetup] = useState<DateSetup>(() => {
+    const [startDate, endDate] = ganttDateRange(tasks, viewMode, preStepsCount);
     return { viewMode, dates: seedDates(startDate, endDate, viewMode) };
   });
+  // const [dateRange, ] = useState<Date[]>(() => {
+  //   return ganttDateRange(tasks, viewMode, preStepsCount);
+  // });
+  // const [dateSetup, ] = useState<DateSetup>(() => {
+  //   const [startDate, endDate] = dateRange;
+  //   return { viewMode, dates: seedDates(startDate, endDate, viewMode) };
+  // });
 
   const [currentViewDate, setCurrentViewDate] = useState<Date | undefined>(
     undefined
@@ -113,24 +122,27 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
       filteredTasks = removeHiddenTasks(filteredTasks);
     }
     filteredTasks = filteredTasks.sort(sortTasks);
-    // const [startDate, endDate] = ganttDateRange(
-    //   filteredTasks,
-    //   viewMode,
-    //   preStepsCount
-    // );
-    // let newDates = seedDates(startDate, endDate, viewMode);
-        // // if (rtl) {
-        // //   newDates = newDates.reverse();
-        // //   if (scrollX === -1) {
-        // //     setScrollX(newDates.length * columnWidth);
-        // //   }
-        // // }
-    // setDateSetup({ dates: newDates, viewMode });
+    // TO PREVENT SCROLL-SHIFT EXPANDING CALENDAR RANGE WHILE DRAGGING EVENTS...
+    // Comment this out, and the 'setDateSetup()' below that.
+    // + the 'newDates,' line insite  'setBarTasks( -> convertToBarTasks(...))'
+    const [startDate, endDate] = ganttDateRange(
+      filteredTasks,
+      viewMode,
+      preStepsCount
+    );
+    let newDates = seedDates(startDate, endDate, viewMode);
+    // if (rtl) {
+    //   newDates = newDates.reverse();
+    //   if (scrollX === -1) {
+    //     setScrollX(newDates.length * columnWidth);
+    //   }
+    // }
+    setDateSetup({ dates: newDates, viewMode });
     setBarTasks(
       convertToBarTasks(
         filteredTasks,
-        // newDates,
-        dateSetup.dates,
+        newDates,
+        // dateSetup.dates,
         columnWidth,
         rowHeight,
         taskHeight,
@@ -147,9 +159,13 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
         projectBackgroundColor,
         projectBackgroundSelectedColor,
         milestoneBackgroundColor,
-        milestoneBackgroundSelectedColor
+        milestoneBackgroundSelectedColor,
       )
     );
+    // if (!initialized.current) {
+    //   initialized.current = true;
+    //   rerender();
+    // }
   }, [
     tasks,
     viewMode,
@@ -170,10 +186,9 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     projectBackgroundSelectedColor,
     milestoneBackgroundColor,
     milestoneBackgroundSelectedColor,
-    // rtl,
-    // scrollX,
+    // rtl, scrollX,
     onExpanderClick,
-    dateSetup
+    // dateSetup  // TO PREVENT SCROLL-SHIFT EXPANDING CALENDAR RANGE WHILE DRAGGING EVENTS - Uncomment this 'dateSetup' access.
   ]);
 
   useEffect(() => {
