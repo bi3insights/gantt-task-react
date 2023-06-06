@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { EventOption } from "../../types/public-types";
 import { BarTask } from "../../types/bar-task";
 import { Arrow } from "../other/arrow";
+// import { handleTaskBySVGMouseEvent, convertTaskWorkDays } from "../../helpers/bar-helper";
 import { handleTaskBySVGMouseEvent } from "../../helpers/bar-helper";
 import { isKeyboardEvent } from "../../helpers/other-helper";
 import { TaskItem } from "../task-item/task-item";
@@ -76,6 +77,7 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
   }, [columnWidth, dates, timeStep]);
 
   useEffect(() => {
+
     const handleMouseMove = async (event: MouseEvent) => {
       if (!ganttEvent.changedTask || !point || !svg?.current) return;
       event.preventDefault();
@@ -96,6 +98,10 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
         rtl
       );
       if (isChanged) {
+
+        // Adjust any non-business days:
+        // [ changedTask.start, changedTask.end ] = convertTaskWorkDays(excludeWeekdays,changedTask);
+
         setGanttEvent({ action: ganttEvent.action, changedTask });
         if (!!onDragChange) {
           try {
@@ -131,8 +137,10 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
         rtl
       );
 
+      // Adjust any non-business days:
+      // THIS IS DONE IN on-move (above): [ newChangedTask.start, newChangedTask.end ] = convertTaskWorkDays(excludeWeekdays,newChangedTask);
+
       const isNotLikeOriginal = ( (originalSelectedTask.start!==newChangedTask.start) || (originalSelectedTask.end!==newChangedTask.end) || (originalSelectedTask.progress!==newChangedTask.progress) );
-      console.log("handleMouseUp -> isChanged, changedTask ===>", isNotLikeOriginal, newChangedTask);
 
       // remove listeners
       svg.current.removeEventListener("mousemove", handleMouseMove);
@@ -143,7 +151,6 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
       // custom operation start
       let operationSuccess = true;
       if ( (action === "move" || action === "end" || action === "start") && onDateChange && isNotLikeOriginal ) {
-        console.log("^^^ handleMouseUp -> 11111");
         try {
           const result = await onDateChange(newChangedTask, newChangedTask.barChildren);
           if (result !== undefined) {
@@ -153,7 +160,6 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
           operationSuccess = false;
         }
       } else if (onProgressChange && isNotLikeOriginal) {
-        console.log("^^^ handleMouseUp -> 22222");
         try {
           const result = await onProgressChange(
             newChangedTask,

@@ -17,7 +17,8 @@ import { VerticalScroll } from "../other/vertical-scroll";
 import { TaskListProps, TaskList } from "../task-list/task-list";
 import { TaskGantt } from "./task-gantt";
 import { BarTask } from "../../types/bar-task";
-import { convertToBarTasks } from "../../helpers/bar-helper";
+// import { convertToBarTasks } from "../../helpers/bar-helper";
+import { convertToBarTasks, shiftTaskNonWorkDays } from "../../helpers/bar-helper";
 import { GanttEvent } from "../../types/gantt-task-actions";
 import { DateSetup } from "../../types/date-setup";
 import { HorizontalScroll } from "../other/horizontal-scroll";
@@ -61,7 +62,6 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   TooltipContent = StandardTooltipContent,
   TaskListHeader = TaskListHeaderDefault,
   TaskListTable = TaskListTableDefault,
-  // rerender,
   onDragChange,
   onDateChange,
   onProgressChange,
@@ -77,7 +77,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   const taskListRef = useRef<HTMLDivElement>(null);
 
   // TO PREVENT SCROLL-SHIFT EXPANDING CALENDAR RANGE WHILE DRAGGING EVENTS...
-  // Replace this 'const [dateSetup, setDateSetup] =...' with two separate fns below: 'const [dateRange, const [dateSetup, ] =] =...' & ''.
+  // Replace this 'const [dateSetup, setDateSetup] =...' with two separate fns below: `const [dateRange, ]` and `const [dateSetup, ]`.
   const [dateSetup, setDateSetup] = useState<DateSetup>(() => {
     const [startDate, endDate] = ganttDateRange(tasks, viewMode, preStepsCount);
     return { viewMode, dates: seedDates(startDate, endDate, viewMode) };
@@ -90,9 +90,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   //   return { viewMode, dates: seedDates(startDate, endDate, viewMode) };
   // });
 
-  const [currentViewDate, setCurrentViewDate] = useState<Date | undefined>(
-    undefined
-  );
+  const [currentViewDate, setCurrentViewDate] = useState<Date|undefined>(undefined);
 
   const [taskListWidth, setTaskListWidth] = useState(0);
   const [svgContainerWidth, setSvgContainerWidth] = useState(0);
@@ -140,14 +138,14 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     //   }
     // }
     setDateSetup({ dates: newDates, viewMode });
-    const _initializedTasks = convertToBarTasks(
+    let _initializedTasks = convertToBarTasks(
       filteredTasks,
       newDates,
       // dateSetup.dates,
       columnWidth,
       rowHeight,
       taskHeight,
-      excludeWeekdays,
+      // excludeWeekdays,
       barCornerRadius,
       handleWidth,
       rtl,
@@ -162,15 +160,45 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
       milestoneBackgroundColor,
       milestoneBackgroundSelectedColor,
     );
-    if (!isFirstInitialized.current) {
-      isFirstInitialized.current = true;
-      onInitialize(_initializedTasks);
-    }
+
+    // Shift tasks with non-business-dates for start/end.
+    _initializedTasks = _initializedTasks.map((task,i) => {
+      const new_task = shiftTaskNonWorkDays(
+        _initializedTasks,
+        task,
+        i,
+        newDates,
+        columnWidth,
+        rowHeight,
+        taskHeight,
+        excludeWeekdays,
+        handleWidth,
+        rtl,
+      );
+      return new_task;
+    });
+
+    // After the above loop is complete, now reset each task's startCache/endCache. The loop above needs the date-diff of cached-start/end, so it can't be reset until after loop is complete.
+    _initializedTasks = _initializedTasks.map((task) => {
+      task.startCache = task.start;
+      task.endCache = task.end;
+      const _task = JSON.parse(JSON.stringify(task));
+      _task.start       = new Date(_task.start);
+      _task.startCache  = new Date(_task.startCache);
+      _task.end         = new Date(_task.end);
+      _task.endCache    = new Date(_task.endCache);
+      // Also update original 'tasks':
+      const _origTask = tasks.find(o=>(o.id===_task.id));
+      if (!!_origTask) {
+        _origTask.start       = new Date(_task.start);
+        _origTask.startCache  = new Date(_task.startCache);
+        _origTask.end         = new Date(_task.end);
+        _origTask.endCache    = new Date(_task.endCache);
+      }
+      return _task;
+    });
+
     setBarTasks(_initializedTasks);
-    // if (!initialized.current) {
-    //   initialized.current = true;
-    //   rerender();
-    // }
   }, [
     tasks,
     viewMode,
@@ -194,7 +222,6 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     // rtl, scrollX,
     onExpanderClick,
     // dateSetup  // TO PREVENT SCROLL-SHIFT EXPANDING CALENDAR RANGE WHILE DRAGGING EVENTS - Uncomment this 'dateSetup' access.
-    isFirstInitialized
   ]);
 
   useEffect(() => {
@@ -282,7 +309,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     if (ganttHeight) {
       setSvgContainerHeight(ganttHeight + headerHeight);
     } else {
-      setSvgContainerHeight(tasks.length * rowHeight + headerHeight);
+      setSvgContainerHeight((tasks.length * rowHeight) + headerHeight);
     }
   }, [ganttHeight, tasks, headerHeight, rowHeight]);
 
@@ -314,7 +341,6 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
 
       setIgnoreScrollEvent(true);
     };
-
     // subscribe if scroll is necessary
     wrapperRef.current?.addEventListener("wheel", handleWheel, {
       passive: false,
@@ -331,6 +357,13 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     rtl,
     ganttFullHeight,
   ]);
+
+  useEffect(()=>{
+    if (!isFirstInitialized.current && !!barTasks.length) {
+      isFirstInitialized.current = true;
+      onInitialize(barTasks);
+    }
+  },[isFirstInitialized,barTasks]);
 
   const handleScrollY = (event: SyntheticEvent<HTMLDivElement>) => {
     if (scrollY !== event.currentTarget.scrollTop && !ignoreScrollEvent) {

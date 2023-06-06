@@ -9,7 +9,7 @@ export const convertToBarTasks = (
   columnWidth: number,
   rowHeight: number,
   taskHeight: number,
-  excludeWeekdays: number[],
+  // excludeWeekdays: number[],
   barCornerRadius: number,
   handleWidth: number,
   rtl: boolean,
@@ -62,30 +62,36 @@ export const convertToBarTasks = (
     return task;
   });
 
-  // Shift tasks with non-business-dates for start/end.
-  barTasks = barTasks.map((task,i) => {
-    const new_task = shiftTaskNonWorkDays(
-      barTasks,
-      task,
-      i,
-      dates,
-      columnWidth,
-      rowHeight,
-      taskHeight,
-      excludeWeekdays,
-      handleWidth,
-      rtl,
-    );
-    return new_task;
-  });
+  // // Shift tasks with non-business-dates for start/end.
+  // barTasks = barTasks.map((task,i) => {
+  //   const new_task = shiftTaskNonWorkDays(
+  //     barTasks,
+  //     task,
+  //     i,
+  //     dates,
+  //     columnWidth,
+  //     rowHeight,
+  //     taskHeight,
+  //     excludeWeekdays,
+  //     handleWidth,
+  //     rtl,
+  //   );
+  //   return new_task;
+  // });
 
-  // Reset each task's startCache/endCache.
-  barTasks = barTasks.map((task) => {
-    task.startCache = task.start;
-    task.endCache = task.end;
-    return task;
-  });
+  // // After the above loop is complete, now reset each task's startCache/endCache. The loop above needs the date-diff of cached-start/end, so it can't be reset until after loop is complete.
+  // barTasks = barTasks.map((task) => {
+  //   task.startCache = task.start;
+  //   task.endCache = task.end;
+  //   const _task = JSON.parse(JSON.stringify(task));
+  //   _task.start       = new Date(_task.start);
+  //   _task.startCache  = new Date(_task.startCache);
+  //   _task.end         = new Date(_task.end);
+  //   _task.endCache    = new Date(_task.endCache);
+  //   return _task;
+  // });
 
+  console.log("FINAL! --> barTasks =", barTasks);
   // Finished.
   return barTasks;
 };
@@ -180,11 +186,13 @@ const getWorkDays = (start:Date, end:Date, excludeWeekdays:number[]) => {
   return loop_duration
 };
 
-const convertTaskWorkDays = (excludeWeekdays:number[], task:Task, backshift:boolean) => {
+export const convertTaskWorkDays = (excludeWeekdays:number[], task:Task) => {
   // Try applying
   if (excludeWeekdays.length>0 && excludeWeekdays.length<6) {
     // If start date is on an excluded DOW, push it out:
     let counter1 = 0;
+    const backshift = (task.start.getTime() < task.startCache.getTime());  // START date shifts in the direction it was dragged.
+    // Loop until START lands on a business work day:
     while (excludeWeekdays.includes(task.start.getDay())) {
       task.start.setDate(task.start.getDate()+(backshift?-1:1));
       ++counter1;
@@ -192,8 +200,9 @@ const convertTaskWorkDays = (excludeWeekdays:number[], task:Task, backshift:bool
     }
     let loop_duration = 1;
     let loop_task_end = new Date(task.start);
+    // Loop until END lands on a business work day:
     while (loop_duration<task.days_duration) {
-      loop_task_end.setDate(loop_task_end.getDate()+1);  // Only increment one day at a time.
+      loop_task_end.setDate(loop_task_end.getDate()+1);  // END date always shifts RIGHT (later), not the direction it was dragged.
       if (!excludeWeekdays.includes(loop_task_end.getDay())) {
         ++loop_duration;  // Increment/Count working days not being excluded until task.days_duration is reached.
       }
@@ -277,7 +286,7 @@ const shiftDaysOfParent = ( task:BarTask, barTasks:BarTask[] ): BarTask => {
   const parentTask = barTasks.find(t=>(Number(t.id)===(!!task.dependencies?.length?Number(task.dependencies[0]):0)));
   if (!!parentTask) {
     const daysShift = getDaysDiff(parentTask.endCache, parentTask.end);
-    console.log("Parent-Shifted-Days =", daysShift);
+    console.log("Parent-Shifted-Days =", daysShift, task, parentTask);
     if (!!daysShift) {
       task.start = addToDate(task.startCache, daysShift, "day");
       task.end = addToDate(task.endCache, daysShift, "day");
@@ -286,7 +295,7 @@ const shiftDaysOfParent = ( task:BarTask, barTasks:BarTask[] ): BarTask => {
   return task;
 };
 
-const shiftTaskNonWorkDays = (
+export const shiftTaskNonWorkDays = (
   barTasks: BarTask[],
   task: BarTask,
   index: number,
@@ -301,7 +310,7 @@ const shiftTaskNonWorkDays = (
   if (task.dependencies?.length===1) {
     task = shiftDaysOfParent(task, barTasks);  // Overwright current task after shifting same as parent was shifted.
   }
-  [task.start,task.end] = convertTaskWorkDays(excludeWeekdays,task,false);
+  [task.start,task.end] = convertTaskWorkDays(excludeWeekdays,task);
   task.start.setHours(0,0,0,0);
   task.end.setHours(23,59,59,0);
   let x1: number;
@@ -617,8 +626,8 @@ const handleTaskBySVGMouseEventForBar = (
         }
         // Try applying
         changedTask.days_duration = getWorkDays(changedTask.start,changedTask.end,excludeWeekdays);
-        const backshift = (selectedTask.x1>newX1?true:false);
-        [changedTask.start,changedTask.end] = convertTaskWorkDays(excludeWeekdays,changedTask,backshift);
+        // const backshift = (selectedTask.x1>newX1?true:false);
+        [changedTask.start,changedTask.end] = convertTaskWorkDays(excludeWeekdays,changedTask);
         console.log("START-DATE: days_duration =",changedTask.days_duration,", changedTask.start =",changedTask.start,"changedTask.end =",changedTask.end);
         const [progressWidth, progressX] = progressWidthByParams(
           changedTask.x1,
@@ -655,8 +664,8 @@ const handleTaskBySVGMouseEventForBar = (
         }
         // Try applying
         changedTask.days_duration = getWorkDays(changedTask.start,changedTask.end,excludeWeekdays);
-        const backshift = (selectedTask.x2>newX2?true:false);
-        [changedTask.start,changedTask.end] = convertTaskWorkDays(excludeWeekdays,changedTask,backshift);
+        // const backshift = (selectedTask.x2>newX2?true:false);
+        [changedTask.start,changedTask.end] = convertTaskWorkDays(excludeWeekdays,changedTask);
         console.log("END-DATE: days_duration =",changedTask.days_duration,", changedTask.start =",changedTask.start,"changedTask.end =",changedTask.end);
         const [progressWidth, progressX] = progressWidthByParams(
           changedTask.x1,
@@ -692,8 +701,8 @@ const handleTaskBySVGMouseEventForBar = (
           timeStep
         );
         // Try applying
-        const backshift = (selectedTask.x1>newMoveX1?true:false);
-        [changedTask.start,changedTask.end] = convertTaskWorkDays(excludeWeekdays,changedTask,backshift);
+        // const backshift = (selectedTask.x1>newMoveX1?true:false);
+        [changedTask.start,changedTask.end] = convertTaskWorkDays(excludeWeekdays,changedTask);
         // console.log("backshift =",backshift,"changedTask.start =",changedTask.start,"changedTask.end =",changedTask.end);
         changedTask.x1 = newMoveX1;
         changedTask.x2 = newMoveX2;

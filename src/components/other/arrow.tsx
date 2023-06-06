@@ -110,10 +110,10 @@ const drownPathAndTriangle = (
   const indexCompare = (taskFrom.index > taskTo.index ? -1 : 1);
   const isUp = (((indexCompare * rowHeight) / 2) < 0);
   const taskToEndPosition = (taskTo.y + (taskHeight / 2));
-  const taskFromEndPosition = taskFrom.x2 + safeIndent * 2;
-  const taskFromHorizontalOffsetValue = ((taskFromEndPosition < taskTo.x1) ? "" : `H ${taskTo.x1 - safeIndent + safeRadius}`);
+  const taskFromEndPosition = (taskFrom.x2 + (safeIndent * 2));
+  const taskFromHorizontalOffsetValue = ((taskFromEndPosition < taskTo.x1+safeIndent) ? "" : `H ${taskTo.x1 - safeIndent + safeRadius}`);
   const taskToHorizontalOffsetValue = (((taskFromEndPosition > taskTo.x1) ? safeIndent : (taskTo.x1 - taskFrom.x2 - safeIndent)) - safeStrokeWidth);
-  const path = `M ${taskFrom.x2-safeRadius} ${taskFrom.y + taskHeight / 2}
+  const path = `M ${taskFrom.x2-safeRadius} ${taskFrom.y + (taskHeight / 2)}
     h ${safeIndent-safeRadius}
     a ${safeRadius} ${safeRadius} 0 0 ${isUp?0:1} ${safeRadius} ${isUp?"-":""}${safeRadius}
     v ${((indexCompare * rowHeight) / 2) - (safeRadius*2*(isUp?-1:1))}${!!taskFromHorizontalOffsetValue ? `
