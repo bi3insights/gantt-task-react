@@ -65,6 +65,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   onDragChange,
   onDateChange,
   onProgressChange,
+  onInitialize,
   onDoubleClick,
   onClick,
   onDelete,
@@ -138,30 +139,30 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     //   }
     // }
     setDateSetup({ dates: newDates, viewMode });
-    setBarTasks(
-      convertToBarTasks(
-        filteredTasks,
-        newDates,
-        // dateSetup.dates,
-        columnWidth,
-        rowHeight,
-        taskHeight,
-        excludeWeekdays,
-        barCornerRadius,
-        handleWidth,
-        rtl,
-        barProgressColor,
-        barProgressSelectedColor,
-        barBackgroundColor,
-        barBackgroundSelectedColor,
-        projectProgressColor,
-        projectProgressSelectedColor,
-        projectBackgroundColor,
-        projectBackgroundSelectedColor,
-        milestoneBackgroundColor,
-        milestoneBackgroundSelectedColor,
-      )
+    const _initializedTasks = convertToBarTasks(
+      filteredTasks,
+      newDates,
+      // dateSetup.dates,
+      columnWidth,
+      rowHeight,
+      taskHeight,
+      excludeWeekdays,
+      barCornerRadius,
+      handleWidth,
+      rtl,
+      barProgressColor,
+      barProgressSelectedColor,
+      barBackgroundColor,
+      barBackgroundSelectedColor,
+      projectProgressColor,
+      projectProgressSelectedColor,
+      projectBackgroundColor,
+      projectBackgroundSelectedColor,
+      milestoneBackgroundColor,
+      milestoneBackgroundSelectedColor,
     );
+    onInitialize(_initializedTasks);
+    setBarTasks(_initializedTasks);
     // if (!initialized.current) {
     //   initialized.current = true;
     //   rerender();

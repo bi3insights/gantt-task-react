@@ -95,7 +95,6 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
         initEventX1Delta,
         rtl
       );
-      console.log("handleMouseMove -> isChanged, changedTask ===>", isChanged, changedTask);
       if (isChanged) {
         setGanttEvent({ action: ganttEvent.action, changedTask });
         if (!!onDragChange) {

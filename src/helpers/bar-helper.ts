@@ -50,7 +50,7 @@ export const convertToBarTasks = (
     );
   });
 
-  // set dependencies
+  // Set dependencies.
   barTasks = barTasks.map(task => {
     const dependencies = task.dependencies || [];
     for (let j = 0; j < dependencies.length; j++) {
@@ -78,6 +78,8 @@ export const convertToBarTasks = (
     );
     return new_task;
   });
+
+  // Finished.
   return barTasks;
 };
 
@@ -183,7 +185,6 @@ const convertTaskWorkDays = (excludeWeekdays:number[], task:Task, backshift:bool
     }
     let loop_duration = 1;
     let loop_task_end = new Date(task.start);
-    console.log("convertTaskWorkDays -> task.days_duration =", task.days_duration);
     while (loop_duration<task.days_duration) {
       loop_task_end.setDate(loop_task_end.getDate()+1);  // Only increment one day at a time.
       if (!excludeWeekdays.includes(loop_task_end.getDay())) {
