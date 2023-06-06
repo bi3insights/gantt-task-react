@@ -115,6 +115,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   const [scrollY, setScrollY] = useState(0);
   const [scrollX, setScrollX] = useState(-1);
   const [ignoreScrollEvent, setIgnoreScrollEvent] = useState(false);
+  const isFirstInitialized = useRef(false);
 
   // task change events
   useEffect(() => {
@@ -161,7 +162,10 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
       milestoneBackgroundColor,
       milestoneBackgroundSelectedColor,
     );
-    onInitialize(_initializedTasks);
+    if (!isFirstInitialized.current) {
+      isFirstInitialized.current = true;
+      onInitialize(_initializedTasks);
+    }
     setBarTasks(_initializedTasks);
     // if (!initialized.current) {
     //   initialized.current = true;
@@ -190,6 +194,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     // rtl, scrollX,
     onExpanderClick,
     // dateSetup  // TO PREVENT SCROLL-SHIFT EXPANDING CALENDAR RANGE WHILE DRAGGING EVENTS - Uncomment this 'dateSetup' access.
+    isFirstInitialized
   ]);
 
   useEffect(() => {

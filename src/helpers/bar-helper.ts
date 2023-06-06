@@ -79,6 +79,13 @@ export const convertToBarTasks = (
     return new_task;
   });
 
+  // Reset each task's startCache/endCache.
+  barTasks = barTasks.map((task) => {
+    task.startCache = task.start;
+    task.endCache = task.end;
+    return task;
+  });
+
   // Finished.
   return barTasks;
 };
@@ -270,6 +277,7 @@ const shiftDaysOfParent = ( task:BarTask, barTasks:BarTask[] ): BarTask => {
   const parentTask = barTasks.find(t=>(Number(t.id)===(!!task.dependencies?.length?Number(task.dependencies[0]):0)));
   if (!!parentTask) {
     const daysShift = getDaysDiff(parentTask.endCache, parentTask.end);
+    console.log("Parent-Shifted-Days =", daysShift);
     if (!!daysShift) {
       task.start = addToDate(task.startCache, daysShift, "day");
       task.end = addToDate(task.endCache, daysShift, "day");
