@@ -1,3 +1,4 @@
+import React from 'react';
 export enum ViewMode {
   // Hour = "Hour",
   // QuarterDay = "Quarter Day",
@@ -154,9 +155,13 @@ export interface StylingOption {
   }>;
 }
 
+interface useRef<T> {
+  current: T | null;
+}
+
 export interface GanttProps extends EventOption, DisplayOption, StylingOption {
   tasks: Task[];
   onInitialize: Function;
-  isFirstInitialized: boolean;
+  isFirstInitialized: useRef<boolean>;
   rerender: Function;
 }

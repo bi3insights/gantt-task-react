@@ -66,7 +66,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   onDateChange,
   onProgressChange,
   onInitialize,
-  isFirstInitialized,
+  isFirstInitialized,  // This is already a useRef!
   onDoubleClick,
   onClick,
   onDelete,
@@ -139,7 +139,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     handleWidth: number,
     rtl: boolean,
   ): BarTask => {
-    if (!!isFirstInitialized && task.dependencies?.length===1) {
+    if (!!isFirstInitialized.current && task.dependencies?.length===1) {
       task = shiftDaysOfParent(task, barTasks);  // Overwright current task after shifting same as parent was shifted.
     }
     [task.start,task.end] = convertTaskWorkDays(excludeWeekdays,task);
@@ -412,8 +412,8 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   ]);
 
   useEffect(()=>{
-    if (!isFirstInitialized && !!barTasks.length) {
-      isFirstInitialized = true;
+    if (!isFirstInitialized.current && !!barTasks.length) {
+      isFirstInitialized.current = true;
       onInitialize(barTasks);
     }
   },[isFirstInitialized,barTasks]);
