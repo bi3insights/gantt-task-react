@@ -206,10 +206,6 @@ export const getLocalDayOfWeek = (
   return bottomValue;
 };
 
-/**
- * Returns monday of current week
- * @param date date for modify
- */
 const getMonday = (date: Date) => {
   const day = date.getDay();
   const diff = date.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is Sunday
@@ -244,5 +240,4 @@ export const getDaysDiff = (a: Date, b: Date) => {
   let _a:number = new Date(a.getFullYear(), a.getMonth(), a.getDate()).valueOf();
   let _b:number = new Date(b.getFullYear(), b.getMonth(), b.getDate()).valueOf();
   return (((((_b - _a) / 1000) / 60) / 60) / 24);
-
 };

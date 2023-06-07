@@ -17,8 +17,8 @@ import { VerticalScroll } from "../other/vertical-scroll";
 import { TaskListProps, TaskList } from "../task-list/task-list";
 import { TaskGantt } from "./task-gantt";
 import { BarTask } from "../../types/bar-task";
-// import { convertToBarTasks } from "../../helpers/bar-helper";
-import { convertToBarTasks, shiftTaskNonWorkDays } from "../../helpers/bar-helper";
+import { convertToBarTasks, convertTaskWorkDays, taskXCoordinate, taskYCoordinate, progressWidthByParams } from "../../helpers/bar-helper";
+import { addToDate, getDaysDiff } from "../../helpers/date-helper";
 import { GanttEvent } from "../../types/gantt-task-actions";
 import { DateSetup } from "../../types/date-setup";
 import { HorizontalScroll } from "../other/horizontal-scroll";
@@ -66,6 +66,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   onDateChange,
   onProgressChange,
   onInitialize,
+  isFirstInitialized,
   onDoubleClick,
   onClick,
   onDelete,
@@ -113,7 +114,60 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   const [scrollY, setScrollY] = useState(0);
   const [scrollX, setScrollX] = useState(-1);
   const [ignoreScrollEvent, setIgnoreScrollEvent] = useState(false);
-  const isFirstInitialized = useRef(false);
+
+  const shiftDaysOfParent = ( task:BarTask, barTasks:BarTask[] ): BarTask => {
+    const parentTask = barTasks.find(t=>(Number(t.id)===(!!task.dependencies?.length?Number(task.dependencies[0]):0)));
+    if (!!parentTask) {
+      const daysShift = getDaysDiff(parentTask.endCache, parentTask.end);
+      if (!!daysShift) {
+        task.start = addToDate(task.startCache, (daysShift<0?-1:1), "day");
+        task.end = addToDate(task.endCache, daysShift, "day");
+      }
+    }
+    return task;
+  };
+
+  const shiftTaskNonWorkDays = (
+    barTasks: BarTask[],
+    task: BarTask,
+    index: number,
+    dates: Date[],
+    columnWidth: number,
+    rowHeight: number,
+    taskHeight: number,
+    excludeWeekdays: number[],
+    handleWidth: number,
+    rtl: boolean,
+  ): BarTask => {
+    if (!!isFirstInitialized && task.dependencies?.length===1) {
+      task = shiftDaysOfParent(task, barTasks);  // Overwright current task after shifting same as parent was shifted.
+    }
+    [task.start,task.end] = convertTaskWorkDays(excludeWeekdays,task);
+    task.start.setHours(0,0,0,0);
+    task.end.setHours(23,59,59,0);
+    let x1: number;
+    let x2: number;
+    x1 = taskXCoordinate(task.start, dates, columnWidth);
+    x2 = taskXCoordinate(task.end, dates, columnWidth);
+    if (task.typeInternal.includes("task") && ((x2 - x1) < (handleWidth * 2))) {
+      x2 = (x1 + (handleWidth * 2));
+    }
+    const [progressWidth, progressX] = progressWidthByParams(
+      x1,
+      x2,
+      task.progress,
+      rtl
+    );
+    const y = taskYCoordinate(index, rowHeight, taskHeight);
+    return {
+      ...task,
+      x1,
+      x2,
+      y,
+      progressX,
+      progressWidth,
+    };
+  };
 
   // task change events
   useEffect(() => {
@@ -338,7 +392,6 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
           event.preventDefault();
         }
       }
-
       setIgnoreScrollEvent(true);
     };
     // subscribe if scroll is necessary
@@ -359,8 +412,8 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   ]);
 
   useEffect(()=>{
-    if (!isFirstInitialized.current && !!barTasks.length) {
-      isFirstInitialized.current = true;
+    if (!isFirstInitialized && !!barTasks.length) {
+      isFirstInitialized = true;
       onInitialize(barTasks);
     }
   },[isFirstInitialized,barTasks]);

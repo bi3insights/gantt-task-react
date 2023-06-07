@@ -1,7 +1,6 @@
 import { Task } from "../types/public-types";
 import { BarTask, TaskTypeInternal } from "../types/bar-task";
 import { BarMoveAction } from "../types/gantt-task-actions";
-import { addToDate, getDaysDiff } from "./date-helper";
 
 export const convertToBarTasks = (
   tasks: Task[],
@@ -9,7 +8,6 @@ export const convertToBarTasks = (
   columnWidth: number,
   rowHeight: number,
   taskHeight: number,
-  // excludeWeekdays: number[],
   barCornerRadius: number,
   handleWidth: number,
   rtl: boolean,
@@ -61,35 +59,6 @@ export const convertToBarTasks = (
     }
     return task;
   });
-
-  // // Shift tasks with non-business-dates for start/end.
-  // barTasks = barTasks.map((task,i) => {
-  //   const new_task = shiftTaskNonWorkDays(
-  //     barTasks,
-  //     task,
-  //     i,
-  //     dates,
-  //     columnWidth,
-  //     rowHeight,
-  //     taskHeight,
-  //     excludeWeekdays,
-  //     handleWidth,
-  //     rtl,
-  //   );
-  //   return new_task;
-  // });
-
-  // // After the above loop is complete, now reset each task's startCache/endCache. The loop above needs the date-diff of cached-start/end, so it can't be reset until after loop is complete.
-  // barTasks = barTasks.map((task) => {
-  //   task.startCache = task.start;
-  //   task.endCache = task.end;
-  //   const _task = JSON.parse(JSON.stringify(task));
-  //   _task.start       = new Date(_task.start);
-  //   _task.startCache  = new Date(_task.startCache);
-  //   _task.end         = new Date(_task.end);
-  //   _task.endCache    = new Date(_task.endCache);
-  //   return _task;
-  // });
 
   // Finished.
   return barTasks;
@@ -188,7 +157,7 @@ const getWorkDays = (start:Date, end:Date, excludeWeekdays:number[]) => {
 export const convertTaskWorkDays = (excludeWeekdays:number[], task:Task) => {
   // Try applying
   if (excludeWeekdays.length>0 && excludeWeekdays.length<6) {
-    // If start date is on an excluded DOW, push it out:
+    // If start date is on an excluded DOW, bump the date:
     let counter1 = 0;
     const backshift = (task.start.getTime() < task.startCache.getTime());  // START date shifts in the direction it was dragged.
     // Loop until START lands on a business work day:
@@ -218,7 +187,6 @@ const convertToBar = (
   columnWidth: number,
   rowHeight: number,
   taskHeight: number,
-  // excludeWeekdays: number[],
   barCornerRadius: number,
   handleWidth: number,
   rtl: boolean,
@@ -227,7 +195,6 @@ const convertToBar = (
   barBackgroundColor: string,
   barBackgroundSelectedColor: string
 ): BarTask => {
-  // [task.start,task.end] = convertTaskWorkDays(excludeWeekdays,task,false);
   task.start.setHours(0,0,0,0);
   task.end.setHours(23,59,59,0);
   let x1: number;
@@ -269,78 +236,6 @@ const convertToBar = (
     height: taskHeight,
     barChildren: [],
     styles,
-  };
-};
-
-// const shiftChildTaskNonWorkDays = (_task:BarTask,_days:number): BarTask => {
-//   _task.start = addToDate(_task.start, _days, "day");
-//   _task.end = addToDate(_task.end, _days, "day");
-//   _task.barChildren.forEach((childChildTask)=>{
-//     shiftChildTaskNonWorkDays(childChildTask,_days);
-//   });
-//   return _task;
-// };
-
-const shiftDaysOfParent = ( task:BarTask, barTasks:BarTask[] ): BarTask => {
-  const parentTask = barTasks.find(t=>(Number(t.id)===(!!task.dependencies?.length?Number(task.dependencies[0]):0)));
-  if (!!parentTask) {
-    const daysShift = getDaysDiff(parentTask.endCache, parentTask.end);
-    // console.log("Parent-Shifted-Days =", daysShift, task, parentTask);
-    if (!!daysShift) {
-      task.start = addToDate(task.startCache, (daysShift===0?0:(daysShift<0?-1:1)), "day");
-      task.end = addToDate(task.endCache, daysShift, "day");
-    }
-  }
-  return task;
-};
-
-export const shiftTaskNonWorkDays = (
-  barTasks: BarTask[],
-  task: BarTask,
-  index: number,
-  dates: Date[],
-  columnWidth: number,
-  rowHeight: number,
-  taskHeight: number,
-  excludeWeekdays: number[],
-  handleWidth: number,
-  rtl: boolean,
-): BarTask => {
-  if (task.dependencies?.length===1) {
-    task = shiftDaysOfParent(task, barTasks);  // Overwright current task after shifting same as parent was shifted.
-  }
-  [task.start,task.end] = convertTaskWorkDays(excludeWeekdays,task);
-  task.start.setHours(0,0,0,0);
-  task.end.setHours(23,59,59,0);
-  let x1: number;
-  let x2: number;
-  x1 = taskXCoordinate(task.start, dates, columnWidth);
-  x2 = taskXCoordinate(task.end, dates, columnWidth);
-  if (task.typeInternal.includes("task") && ((x2 - x1) < (handleWidth * 2))) {
-    x2 = (x1 + (handleWidth * 2));
-  }
-  const [progressWidth, progressX] = progressWidthByParams(
-    x1,
-    x2,
-    task.progress,
-    rtl
-  );
-  const y = taskYCoordinate(index, rowHeight, taskHeight);
-                // // NO LONGER DOING THIS FOR CHILDREN, INSTEAD WORKING EACH ITEM ABOVE SHIFTING FROM PARENT.
-                // // If 'convertTaskWorkDays' shifted the end-date, then also shift any dependents:
-                // // This shifts the children's & children's-children-etc-recursively BEFORE they get to 'shiftTaskNonWorkDays'. <-- That will do a final adjustment to shift them again off of non-business days.
-                // const daysShift = getDaysDiff(task.endCache, task.end);
-                // if (!!daysShift && !!task.barChildren?.length) {
-                //   console.log("daysShift =", daysShift, ", task.barChildren =",task.barChildren);
-                //   task = shiftChildTaskNonWorkDays(task,daysShift);
-                // }
-  return {
-    ...task,
-    x1,
-    x2,
-    y,
-    progressX,
-    progressWidth,
   };
 };
 
@@ -390,8 +285,8 @@ const convertToMilestone = (
   };
 };
 
+//// Original 'taskXCoordinate'.
 // const taskXCoordinate = (xDate: Date, dates: Date[], columnWidth: number) => {
-//   // Try applying excludeWeekdays here:
 //   const index = dates.findIndex(d => d.getTime() >= xDate.getTime()) - 1;
 //   const remainderMillis = xDate.getTime() - dates[index].getTime();
 //   const percentOfInterval = remainderMillis / (dates[index + 1].getTime() - dates[index].getTime());
@@ -400,24 +295,21 @@ const convertToMilestone = (
 // };
 //// The old 'taskXCoordinate' above allowed for partial-days, and therefore had to calculate that position.
 //// Going forward we are not ever doing less than full-day intervals. Partial-days calculation can be removed and simplified.
-const taskXCoordinate = (xDate: Date, dates: Date[], columnWidth: number) => {
-  // Try applying excludeWeekdays here:
-  // const index = (dates.findIndex(d => (d.getTime()>=xDate.getTime())) - 1);
+export const taskXCoordinate = (xDate: Date, dates: Date[], columnWidth: number) => {
   const index = (dates.findIndex(d => (d.getTime()>=xDate.getTime())));
   let x = (index * columnWidth);
   if (index===-1) {  // Calculate it manually.
     const datesInterval = (dates[1].getTime()-dates[0].getTime());
-    if (dates[0].getTime()<xDate.getTime()) {
+    if (dates[0].getTime()>xDate.getTime()) {
       x = (((dates[0].getTime()-xDate.getTime())/datesInterval) * columnWidth);
     }
     if (dates[0].getTime()<xDate.getTime()) {
       x = (((xDate.getTime()-dates[dates.length-1].getTime())/datesInterval) * columnWidth);
     }
-    // console.log("index =", index, ", taskXCoordinate() --> xDate =", xDate, ", datesInterval =", datesInterval, ", x =",x)
   }
   return x;
 };
-const taskYCoordinate = (
+export const taskYCoordinate = (
   index: number,
   rowHeight: number,
   taskHeight: number
@@ -697,8 +589,7 @@ const handleTaskBySVGMouseEventForBar = (
           xStep,
           timeStep
         );
-        // Try applying
-        // const backshift = (selectedTask.x1>newMoveX1?true:false);
+        // Try applying 'excludeWeekdays'.
         [changedTask.start,changedTask.end] = convertTaskWorkDays(excludeWeekdays,changedTask);
         changedTask.x1 = newMoveX1;
         changedTask.x2 = newMoveX2;
