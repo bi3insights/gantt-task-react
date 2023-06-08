@@ -33,9 +33,7 @@ export const Bar: React.FC<TaskItemProps> = ({
         barCornerRadius={task.barCornerRadius}
         styles={task.styles}
         isSelected={isSelected}
-        onMouseDown={e => {
-          isDateChangeable && onEventStart("move", task, e);
-        }}
+        onMouseDown={e => { isDateChangeable && onEventStart("move", task, e); }}
       />
       <g className="handleGroup">
         {isDateChangeable && (
@@ -47,9 +45,7 @@ export const Bar: React.FC<TaskItemProps> = ({
               width={task.handleWidth}
               height={handleHeight}
               barCornerRadius={task.barCornerRadius}
-              onMouseDown={e => {
-                onEventStart("start", task, e);
-              }}
+              onMouseDown={e => { onEventStart("start", task, e); }}
             />
             {/* right */}
             <BarDateHandle
@@ -58,18 +54,14 @@ export const Bar: React.FC<TaskItemProps> = ({
               width={task.handleWidth}
               height={handleHeight}
               barCornerRadius={task.barCornerRadius}
-              onMouseDown={e => {
-                onEventStart("end", task, e);
-              }}
+              onMouseDown={e => { onEventStart("end", task, e); }}
             />
           </g>
         )}
         {isProgressChangeable && (
           <BarProgressHandle
             progressPoint={progressPoint}
-            onMouseDown={e => {
-              onEventStart("progress", task, e);
-            }}
+            onMouseDown={e => { onEventStart("progress", task, e); }}
           />
         )}
       </g>

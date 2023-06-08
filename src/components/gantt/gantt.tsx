@@ -412,7 +412,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   ]);
 
   useEffect(()=>{
-    if (!isFirstInitialized.current && !!barTasks.length) {
+    if (!!isFirstInitialized && isFirstInitialized.hasOwnProperty("current") && !isFirstInitialized.current && !!barTasks.length) {
       isFirstInitialized.current = true;
       if (typeof(onInitialize)==="function") {
         onInitialize(barTasks);
