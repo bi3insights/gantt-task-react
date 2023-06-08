@@ -120,10 +120,11 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     const parentTask = barTasks.find(t=>(Number(t.id)===(!!task.dependencies?.length?Number(task.dependencies[0]):0)));
     if (!!parentTask) {
       const daysShift = getDaysDiff(parentTask.endCache, parentTask.end);
-      console.log("daysShift =", daysShift);
+      console.log("daysShift =", daysShift, parentTask);
       if (!!daysShift) {
         task.start = addToDate(task.startCache, (daysShift<0?-1:1), "day");
-        task.end = addToDate(task.endCache, daysShift, "day");
+        task.end = addToDate(task.endCache, (daysShift<0?-1:1), "day");
+        console.log("Dep-Task was shifted: daysShift =", daysShift, ", task.start =", task.start, ", task.end =", task.end, );
       }
     }
     return task;
@@ -141,10 +142,12 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     handleWidth: number,
     rtl: boolean,
   ): BarTask => {
-    if (!!isFirstInitialized.current && task.dependencies?.length===1) {
-      task = shiftDaysOfParent(task, barTasks);  // Overwright current task after shifting same as parent was shifted.
+    if (false) {
+      if (!!isFirstInitialized.current && !!task.dependencies?.length) {
+        task = shiftDaysOfParent(task, barTasks);  // Overwright current task after shifting same as parent was shifted.
+      }
+      [task.start,task.end] = convertTaskWorkDays(excludeWeekdays,task);
     }
-    [task.start,task.end] = convertTaskWorkDays(excludeWeekdays,task);
     task.start.setHours(0,0,0,0);
     task.end.setHours(23,59,59,0);
     let x1: number;
@@ -178,6 +181,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
       filteredTasks = removeHiddenTasks(filteredTasks);
     }
     filteredTasks = filteredTasks.sort(sortTasks);
+    console.log("gantt.tsx MAIN useEffect -> changedTask =", filteredTasks[0].start, filteredTasks[0].end, filteredTasks[0].days_duration);
     // TO PREVENT SCROLL-SHIFT EXPANDING CALENDAR RANGE WHILE DRAGGING EVENTS...
     // Comment this out, and the 'setDateSetup()' below that, AND the 'newDates,' line inside  'setBarTasks( -> convertToBarTasks(...))'
     // const [startDate, endDate] = ganttDateRange(
@@ -200,7 +204,6 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
       columnWidth,
       rowHeight,
       taskHeight,
-      // excludeWeekdays,
       barCornerRadius,
       handleWidth,
       rtl,
@@ -236,13 +239,11 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
 
     // After the above loop is complete, now reset each task's startCache/endCache. The loop above needs the date-diff of cached-start/end, so it can't be reset until after loop is complete.
     _initializedTasks = _initializedTasks.map((task) => {
-      task.startCache = task.start;
-      task.endCache = task.end;
       const _task = JSON.parse(JSON.stringify(task));
       _task.start       = new Date(_task.start);
-      _task.startCache  = new Date(_task.startCache);
+      _task.startCache  = new Date(_task.start);
       _task.end         = new Date(_task.end);
-      _task.endCache    = new Date(_task.endCache);
+      _task.endCache    = new Date(_task.end);
       // Also update original 'tasks':
       const _origTask = tasks.find(o=>(o.id===_task.id));
       if (!!_origTask) {
@@ -280,7 +281,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     rtl,
     // scrollX,
     onExpanderClick,
-    dateSetup  // TO PREVENT SCROLL-SHIFT EXPANDING CALENDAR RANGE WHILE DRAGGING EVENTS - Uncomment this 'dateSetup' access.
+    dateSetup  // TO PREVENT SCROLL-SHIFT EXPANDING CALENDAR RANGE WHILE DRAGGING EVENTS - Uncomment this 'dateSetup' accessor.
   ]);
 
   useEffect(() => {
@@ -315,26 +316,20 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   useEffect(() => {
     const { changedTask, action } = ganttEvent;
     if (changedTask) {
+      console.log("GANTT useEffect: action =", action, ", changedTask =", changedTask?.days_duration, changedTask?.start, changedTask?.end);
       if (action === "delete") {
         setGanttEvent({ action: "" });
         setBarTasks(barTasks.filter(t => t.id !== changedTask.id));
-      } else if (
-        action === "move" ||
-        action === "end" ||
-        action === "start" ||
-        action === "progress"
-      ) {
+      } else if (action === "move" || action === "end" || action === "start" || action === "progress") {
         const prevStateTask = barTasks.find(t => t.id === changedTask.id);
-        if (
-          prevStateTask &&
-          (prevStateTask.start.getTime() !== changedTask.start.getTime() ||
-            prevStateTask.end.getTime() !== changedTask.end.getTime() ||
-            prevStateTask.progress !== changedTask.progress)
+        if (prevStateTask &&
+          (prevStateTask.start.getTime() !== changedTask.start.getTime()
+            || prevStateTask.end.getTime() !== changedTask.end.getTime()
+            || prevStateTask.progress !== changedTask.progress
+          )
         ) {
           // actions for change
-          const newTaskList = barTasks.map(t =>
-            t.id === changedTask.id ? changedTask : t
-          );
+          const newTaskList = barTasks.map(t => (t.id === changedTask.id ? changedTask : t));
           setBarTasks(newTaskList);
         }
       }
@@ -419,7 +414,9 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   useEffect(()=>{
     if (!isFirstInitialized.current && !!barTasks.length) {
       isFirstInitialized.current = true;
-      onInitialize(barTasks);
+      if (typeof(onInitialize)==="function") {
+        onInitialize(barTasks);
+      }
     }
   },[isFirstInitialized,barTasks]);
 
@@ -492,9 +489,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
    */
   const handleSelectedTask = (taskId: string) => {
     const newSelectedTask = barTasks.find(t => t.id === taskId);
-    const oldSelectedTask = barTasks.find(
-      t => !!selectedTask && t.id === selectedTask.id
-    );
+    const oldSelectedTask = barTasks.find(t => !!selectedTask && t.id === selectedTask.id);
     if (onSelect) {
       if (oldSelectedTask) {
         onSelect(oldSelectedTask, false);

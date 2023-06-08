@@ -161,7 +161,7 @@ interface useRef<T> {
 
 export interface GanttProps extends EventOption, DisplayOption, StylingOption {
   tasks: Task[];
-  onInitialize: Function;
+  onInitialize: Function | undefined;
   isFirstInitialized: useRef<boolean>;
   rerender: Function;
 }
