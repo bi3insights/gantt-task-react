@@ -79,7 +79,8 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
 
   // TO PREVENT SCROLL-SHIFT EXPANDING CALENDAR RANGE WHILE DRAGGING EVENTS...
   // Replace this 'const [dateSetup, setDateSetup] =...' with two separate fns below: `const [dateRange, ]` and `const [dateSetup, ]`.
-  const [dateSetup, setDateSetup] = useState<DateSetup>(() => {
+  // const [dateSetup, setDateSetup] = useState<DateSetup>(() => {
+  const [dateSetup, ] = useState<DateSetup>(() => {
     const [startDate, endDate] = ganttDateRange(tasks, viewMode, preStepsCount);
     return { viewMode, dates: seedDates(startDate, endDate, viewMode) };
   });
@@ -119,6 +120,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     const parentTask = barTasks.find(t=>(Number(t.id)===(!!task.dependencies?.length?Number(task.dependencies[0]):0)));
     if (!!parentTask) {
       const daysShift = getDaysDiff(parentTask.endCache, parentTask.end);
+      console.log("daysShift =", daysShift);
       if (!!daysShift) {
         task.start = addToDate(task.startCache, (daysShift<0?-1:1), "day");
         task.end = addToDate(task.endCache, daysShift, "day");
@@ -177,25 +179,24 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     }
     filteredTasks = filteredTasks.sort(sortTasks);
     // TO PREVENT SCROLL-SHIFT EXPANDING CALENDAR RANGE WHILE DRAGGING EVENTS...
-    // Comment this out, and the 'setDateSetup()' below that.
-    // + the 'newDates,' line insite  'setBarTasks( -> convertToBarTasks(...))'
-    const [startDate, endDate] = ganttDateRange(
-      filteredTasks,
-      viewMode,
-      preStepsCount
-    );
-    let newDates = seedDates(startDate, endDate, viewMode);
-    // if (rtl) {
-    //   newDates = newDates.reverse();
-    //   if (scrollX === -1) {
-    //     setScrollX(newDates.length * columnWidth);
-    //   }
-    // }
-    setDateSetup({ dates: newDates, viewMode });
+    // Comment this out, and the 'setDateSetup()' below that, AND the 'newDates,' line inside  'setBarTasks( -> convertToBarTasks(...))'
+    // const [startDate, endDate] = ganttDateRange(
+    //   filteredTasks,
+    //   viewMode,
+    //   preStepsCount
+    // );
+    // let newDates = seedDates(startDate, endDate, viewMode);
+    // // if (rtl) {
+    // //   newDates = newDates.reverse();
+    // //   if (scrollX === -1) {
+    // //     setScrollX(newDates.length * columnWidth);
+    // //   }
+    // // }
+    // setDateSetup({ dates: newDates, viewMode });
     let _initializedTasks = convertToBarTasks(
       filteredTasks,
-      newDates,
-      // dateSetup.dates,
+      // newDates,
+      dateSetup.dates,
       columnWidth,
       rowHeight,
       taskHeight,
@@ -221,7 +222,8 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
         _initializedTasks,
         task,
         i,
-        newDates,
+        // newDates,
+        dateSetup.dates,
         columnWidth,
         rowHeight,
         taskHeight,
@@ -252,6 +254,8 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
       return _task;
     });
 
+    console.log("gantt.tsx MAIN useEffect -> changedTask =", _initializedTasks[0].start, _initializedTasks[0].end, _initializedTasks[0].days_duration);
+
     setBarTasks(_initializedTasks);
   }, [
     tasks,
@@ -273,9 +277,10 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     projectBackgroundSelectedColor,
     milestoneBackgroundColor,
     milestoneBackgroundSelectedColor,
-    // rtl, scrollX,
+    rtl,
+    // scrollX,
     onExpanderClick,
-    // dateSetup  // TO PREVENT SCROLL-SHIFT EXPANDING CALENDAR RANGE WHILE DRAGGING EVENTS - Uncomment this 'dateSetup' access.
+    dateSetup  // TO PREVENT SCROLL-SHIFT EXPANDING CALENDAR RANGE WHILE DRAGGING EVENTS - Uncomment this 'dateSetup' access.
   ]);
 
   useEffect(() => {

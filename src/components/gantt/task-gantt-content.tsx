@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { EventOption } from "../../types/public-types";
 import { BarTask } from "../../types/bar-task";
 import { Arrow } from "../other/arrow";
-// import { handleTaskBySVGMouseEvent, convertTaskWorkDays } from "../../helpers/bar-helper";
 import { handleTaskBySVGMouseEvent } from "../../helpers/bar-helper";
 import { isKeyboardEvent } from "../../helpers/other-helper";
 import { TaskItem } from "../task-item/task-item";
@@ -87,6 +86,7 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
         svg?.current.getScreenCTM()?.inverse()
       );
 
+      // console.log("handleMouseMove -> 1. changedTask =", ganttEvent.changedTask.start, ganttEvent.changedTask.end, ganttEvent.changedTask.days_duration);
       const { isChanged, changedTask } = handleTaskBySVGMouseEvent(
         cursor.x,
         ganttEvent.action as BarMoveAction,
@@ -99,8 +99,7 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
       );
       if (isChanged) {
 
-        // Adjust any non-business days:
-        // [ changedTask.start, changedTask.end ] = convertTaskWorkDays(excludeWeekdays,changedTask);
+        // console.log("handleMouseMove -> 2. changedTask =", changedTask.start, changedTask.end, changedTask.days_duration);
 
         setGanttEvent({ action: ganttEvent.action, changedTask });
         if (!!onDragChange) {
@@ -126,6 +125,7 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
       const cursor = point.matrixTransform(
         svg?.current.getScreenCTM()?.inverse()
       );
+      // console.log("handleMouseUp -> 1. changedTask =", changedTask.start, changedTask.end, changedTask.days_duration);
       const { changedTask: newChangedTask } = handleTaskBySVGMouseEvent(
         cursor.x,
         action as BarMoveAction,
@@ -136,9 +136,7 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
         initEventX1Delta,
         rtl
       );
-
-      // Adjust any non-business days:
-      // THIS IS DONE IN on-move (above): [ newChangedTask.start, newChangedTask.end ] = convertTaskWorkDays(excludeWeekdays,newChangedTask);
+      console.log("handleMouseUp -> 2. newChangedTask =", newChangedTask.start, newChangedTask.end, newChangedTask.days_duration);
 
       const isNotLikeOriginal = ( (originalSelectedTask.start!==newChangedTask.start) || (originalSelectedTask.end!==newChangedTask.end) || (originalSelectedTask.progress!==newChangedTask.progress) );
 

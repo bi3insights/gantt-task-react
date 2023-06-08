@@ -158,13 +158,12 @@ export const convertTaskWorkDays = (excludeWeekdays:number[], task:Task) => {
   // Try applying
   if (excludeWeekdays.length>0 && excludeWeekdays.length<6) {
     // If start date is on an excluded DOW, bump the date:
-    let counter1 = 0;
+    let breakCnt = 0;
     const backshift = (task.start.getTime() < task.startCache.getTime());  // START date shifts in the direction it was dragged.
     // Loop until START lands on a business work day:
     while (excludeWeekdays.includes(task.start.getDay())) {
       task.start.setDate(task.start.getDate()+(backshift?-1:1));
-      ++counter1;
-      if(counter1>6){break;} // If all 7 weekdays [0,1,2,3,4,5,6] are in the excludeWeekdays array, or something else broke, prevent looping more than 7 times.
+      if(++breakCnt>6){break;} // If all 7 weekdays [0,1,2,3,4,5,6] are in the excludeWeekdays array, or something else broke, prevent looping more than 7 times.
     }
     let loop_duration = 1;
     let loop_task_end = new Date(task.start);
@@ -175,7 +174,8 @@ export const convertTaskWorkDays = (excludeWeekdays:number[], task:Task) => {
         ++loop_duration;  // Increment/Count working days not being excluded until task.days_duration is reached.
       }
     }
-    task.end = new Date(loop_task_end);
+    task.start = new Date(task.start.setHours(0,0,0,0));
+    task.end = new Date(loop_task_end.setHours(23,59,59,0));
   }
   return [task.start,task.end]
 };
@@ -496,7 +496,7 @@ const handleTaskBySVGMouseEventForBar = (
     case "start": {
       const newX1 = startByX(svgX, xStep, selectedTask);
       changedTask.x1 = newX1;
-      isChanged = changedTask.x1 !== selectedTask.x1;
+      isChanged = newX1 !== selectedTask.x1;
       if (isChanged) {
         if (rtl) {
           changedTask.end = dateByX(
@@ -515,9 +515,8 @@ const handleTaskBySVGMouseEventForBar = (
             timeStep
           );
         }
-        // Try applying
+        // Try applying 'excludeWeekdays'.
         changedTask.days_duration = getWorkDays(changedTask.start,changedTask.end,excludeWeekdays);
-        // const backshift = (selectedTask.x1>newX1?true:false);
         [changedTask.start,changedTask.end] = convertTaskWorkDays(excludeWeekdays,changedTask);
         const [progressWidth, progressX] = progressWidthByParams(
           changedTask.x1,
@@ -533,7 +532,7 @@ const handleTaskBySVGMouseEventForBar = (
     case "end": {
       const newX2 = endByX(svgX, xStep, selectedTask);
       changedTask.x2 = newX2;
-      isChanged = changedTask.x2 !== selectedTask.x2;
+      isChanged = newX2 !== selectedTask.x2;
       if (isChanged) {
         if (rtl) {
           changedTask.start = dateByX(
@@ -552,9 +551,8 @@ const handleTaskBySVGMouseEventForBar = (
             timeStep
           );
         }
-        // Try applying
+        // Try applying 'excludeWeekdays'.
         changedTask.days_duration = getWorkDays(changedTask.start,changedTask.end,excludeWeekdays);
-        // const backshift = (selectedTask.x2>newX2?true:false);
         [changedTask.start,changedTask.end] = convertTaskWorkDays(excludeWeekdays,changedTask);
         const [progressWidth, progressX] = progressWidthByParams(
           changedTask.x1,
