@@ -66,7 +66,6 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   onDateChange,
   onProgressChange,
   onInitialize,
-  isFirstInitialized,  // This is already a useRef!
   onDoubleClick,
   onClick,
   onDelete,
@@ -76,6 +75,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   // const initialized = useRef<boolean>(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const taskListRef = useRef<HTMLDivElement>(null);
+  const isFirstInitialized = useRef<boolean>(false);
 
   // TO PREVENT SCROLL-SHIFT EXPANDING CALENDAR RANGE WHILE DRAGGING EVENTS...
   // Replace this 'const [dateSetup, setDateSetup] =...' with two separate fns below: `const [dateRange, ]` and `const [dateSetup, ]`.
@@ -120,11 +120,9 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     const parentTask = barTasks.find(t=>(Number(t.id)===(!!task.dependencies?.length?Number(task.dependencies[0]):0)));
     if (!!parentTask) {
       const daysShift = getDaysDiff(parentTask.endCache, parentTask.end);
-      console.log("daysShift =", daysShift, parentTask);
       if (!!daysShift) {
         task.start = addToDate(task.startCache, (daysShift<0?-1:1), "day");
         task.end = addToDate(task.endCache, (daysShift<0?-1:1), "day");
-        console.log("Dep-Task was shifted: daysShift =", daysShift, ", task.start =", task.start, ", task.end =", task.end, );
       }
     }
     return task;
@@ -142,12 +140,13 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     handleWidth: number,
     rtl: boolean,
   ): BarTask => {
-    if (false) {
-      if (!!isFirstInitialized.current && !!task.dependencies?.length) {
+    console.log(task.start.getTime()!==task.startCache.getTime(), task.end.getTime()!==task.endCache.getTime());
+    if (task.end.getTime()!==task.endCache.getTime()) {
+      if (!!task.dependencies?.length) {
         task = shiftDaysOfParent(task, barTasks);  // Overwright current task after shifting same as parent was shifted.
       }
-      [task.start,task.end] = convertTaskWorkDays(excludeWeekdays,task);
     }
+    [task.start,task.end] = convertTaskWorkDays(excludeWeekdays,task);
     task.start.setHours(0,0,0,0);
     task.end.setHours(23,59,59,0);
     let x1: number;
@@ -181,7 +180,6 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
       filteredTasks = removeHiddenTasks(filteredTasks);
     }
     filteredTasks = filteredTasks.sort(sortTasks);
-    console.log("gantt.tsx MAIN useEffect -> changedTask =", filteredTasks[0].start, filteredTasks[0].end, filteredTasks[0].days_duration);
     // TO PREVENT SCROLL-SHIFT EXPANDING CALENDAR RANGE WHILE DRAGGING EVENTS...
     // Comment this out, and the 'setDateSetup()' below that, AND the 'newDates,' line inside  'setBarTasks( -> convertToBarTasks(...))'
     // const [startDate, endDate] = ganttDateRange(
@@ -255,7 +253,6 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
       return _task;
     });
 
-    console.log("gantt.tsx MAIN useEffect -> changedTask =", _initializedTasks[0].start, _initializedTasks[0].end, _initializedTasks[0].days_duration);
 
     setBarTasks(_initializedTasks);
   }, [
@@ -281,7 +278,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     rtl,
     // scrollX,
     onExpanderClick,
-    dateSetup  // TO PREVENT SCROLL-SHIFT EXPANDING CALENDAR RANGE WHILE DRAGGING EVENTS - Uncomment this 'dateSetup' accessor.
+    dateSetup,  // TO PREVENT SCROLL-SHIFT EXPANDING CALENDAR RANGE WHILE DRAGGING EVENTS - Uncomment this 'dateSetup' accessor.
   ]);
 
   useEffect(() => {
@@ -316,7 +313,6 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   useEffect(() => {
     const { changedTask, action } = ganttEvent;
     if (changedTask) {
-      console.log("GANTT useEffect: action =", action, ", changedTask =", changedTask?.days_duration, changedTask?.start, changedTask?.end);
       if (action === "delete") {
         setGanttEvent({ action: "" });
         setBarTasks(barTasks.filter(t => t.id !== changedTask.id));
@@ -412,11 +408,9 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   ]);
 
   useEffect(()=>{
-    if (!!isFirstInitialized && isFirstInitialized.hasOwnProperty("current") && !isFirstInitialized.current && !!barTasks.length) {
+    if (!isFirstInitialized.current && !!barTasks.length && typeof(onInitialize)==="function") {
       isFirstInitialized.current = true;
-      if (typeof(onInitialize)==="function") {
-        onInitialize(barTasks);
-      }
+      onInitialize(barTasks);
     }
   },[isFirstInitialized,barTasks]);
 

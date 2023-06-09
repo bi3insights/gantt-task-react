@@ -427,7 +427,6 @@ export const handleTaskBySVGMouseEvent = (
   svgX: number,
   action: BarMoveAction,
   selectedTask: BarTask,
-  originalTask: BarTask | undefined,
   xStep: number,
   timeStep: number,
   excludeWeekdays: number[],
@@ -451,7 +450,6 @@ export const handleTaskBySVGMouseEvent = (
         svgX,
         action,
         selectedTask,
-        originalTask,
         xStep,
         timeStep,
         excludeWeekdays,
@@ -467,7 +465,6 @@ const handleTaskBySVGMouseEventForBar = (
   svgX: number,
   action: BarMoveAction,
   selectedTask: BarTask,
-  originalTask: BarTask | undefined,
   xStep: number,
   timeStep: number,
   excludeWeekdays: number[],
@@ -476,9 +473,6 @@ const handleTaskBySVGMouseEventForBar = (
 ): { isChanged: boolean; changedTask: BarTask } => {
   const changedTask: BarTask = { ...selectedTask };
   let isChanged = false;
-                                                                                                                                        if (false) {  // Satisfy tslint
-                                                                                                                                          console.log("originalTask =", originalTask, ", excludeWeekdays =", excludeWeekdays);
-                                                                                                                                        }
   switch (action) {
     case "progress":
       if (rtl) {
@@ -521,10 +515,9 @@ const handleTaskBySVGMouseEventForBar = (
           );
         }
         // Try applying 'excludeWeekdays'.
-        // changedTask.days_duration = getWorkDaysDiff(changedTask.start,changedTask.end,excludeWeekdays);
-        changedTask.days_duration = getDaysDiff(changedTask.start,changedTask.end);
-        console.log("start -> changedTask =", changedTask.days_duration, changedTask.start, changedTask.end, " <- selectedTask =", selectedTask.days_duration, selectedTask.start, selectedTask.end);
-        // [changedTask.start,changedTask.end] = convertTaskWorkDays(excludeWeekdays,changedTask);
+        changedTask.days_duration = getWorkDaysDiff(changedTask.start,changedTask.end,excludeWeekdays);
+        // changedTask.days_duration = getDaysDiff(changedTask.start,changedTask.end);
+        [changedTask.start,changedTask.end] = convertTaskWorkDays(excludeWeekdays,changedTask);
         const [progressWidth, progressX] = progressWidthByParams(
           changedTask.x1,
           changedTask.x2,
@@ -559,10 +552,9 @@ const handleTaskBySVGMouseEventForBar = (
           );
         }
         // Try applying 'excludeWeekdays'.
-        // changedTask.days_duration = getWorkDaysDiff(changedTask.start,changedTask.end,excludeWeekdays);
-        changedTask.days_duration = getDaysDiff(changedTask.start,changedTask.end);
-        console.log(" end  -> changedTask =", changedTask.days_duration, changedTask.start, changedTask.end, " <- selectedTask =", selectedTask.days_duration, selectedTask.start, selectedTask.end);
-        // [changedTask.start,changedTask.end] = convertTaskWorkDays(excludeWeekdays,changedTask);
+        changedTask.days_duration = getWorkDaysDiff(changedTask.start,changedTask.end,excludeWeekdays);
+        // changedTask.days_duration = getDaysDiff(changedTask.start,changedTask.end);
+        [changedTask.start,changedTask.end] = convertTaskWorkDays(excludeWeekdays,changedTask);
         const [progressWidth, progressX] = progressWidthByParams(
           changedTask.x1,
           changedTask.x2,
@@ -597,7 +589,7 @@ const handleTaskBySVGMouseEventForBar = (
           timeStep
         );
         // Try applying 'excludeWeekdays'.
-        // [changedTask.start,changedTask.end] = convertTaskWorkDays(excludeWeekdays,changedTask);
+        [changedTask.start,changedTask.end] = convertTaskWorkDays(excludeWeekdays,changedTask);
         changedTask.x1 = newMoveX1;
         changedTask.x2 = newMoveX2;
         const [progressWidth, progressX] = progressWidthByParams(changedTask.x1,changedTask.x2,changedTask.progress,rtl);
@@ -609,7 +601,6 @@ const handleTaskBySVGMouseEventForBar = (
   }
   changedTask.start.setHours(0,0,0,0);
   changedTask.end.setHours(23,59,59,0);
-  console.log("B4 RETURN: changedTask =", changedTask.days_duration, changedTask.start, changedTask.end);
   return { isChanged, changedTask };
 };
 

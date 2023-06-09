@@ -60,15 +60,13 @@ export interface EventOption {
    * Invokes on drag. Chart undoes operation if method return false or error.
    */
   onDragChange?: (
-    task: Task,
-    children: Task[]
+    task: Task
   ) => void | boolean | Promise<void> | Promise<boolean>;
   /**
    * Invokes on end and start time change. Chart undoes operation if method return false or error.
    */
   onDateChange?: (
-    task: Task,
-    children: Task[]
+    task: Task
   ) => void | boolean | Promise<void> | Promise<boolean>;
   /**
    * Invokes on progress change. Chart undoes operation if method return false or error.
@@ -155,13 +153,13 @@ export interface StylingOption {
   }>;
 }
 
-interface useRef<T> {
-  current: T | null;
-}
+// interface useRef<T> {
+//   current: T | null;
+// }
 
 export interface GanttProps extends EventOption, DisplayOption, StylingOption {
   tasks: Task[];
   onInitialize: Function | undefined;
-  isFirstInitialized: useRef<boolean|undefined>;
+  // isFirstInitialized: useRef<boolean|undefined>;
   rerender: Function;
 }

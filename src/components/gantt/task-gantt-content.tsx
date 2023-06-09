@@ -78,7 +78,7 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
   useEffect(() => {
 
     const handleMouseMove = async (event: MouseEvent) => {
-      const { action, originalSelectedTask, changedTask } = ganttEvent;
+      const { action, changedTask } = ganttEvent;
       if (!changedTask || !point || !svg?.current) return;
       event.preventDefault();
 
@@ -90,7 +90,6 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
         cursor.x,
         action as BarMoveAction,
         changedTask,
-        originalSelectedTask,
         xStep,
         timeStep,
         excludeWeekdays,
@@ -98,13 +97,12 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
         rtl
       );
 
-      console.log("handleMouseMove: newChangedTask =", newChangedTask.days_duration, newChangedTask.start, newChangedTask.end);
       // DO NOT CHECK FOR `isChanged` - THIS IS BLOCKING DRAG BACK TO ORIGINAL DATE!
       // if (isChanged) {
         setGanttEvent({ action: action, changedTask: newChangedTask });
         if (!!onDragChange) {
           try {
-            await onDragChange(newChangedTask, newChangedTask.barChildren);
+            await onDragChange(newChangedTask);
           } catch (error) {
             // silent fail.
           }
@@ -113,10 +111,8 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
     };
 
     const handleMouseUp = async (event: MouseEvent) => {
-      debugger;
       const { action, originalSelectedTask, changedTask } = ganttEvent;
       if (!changedTask || !point || !svg?.current || !originalSelectedTask) {
-        console.log("handleMouseUp: newChangedTask <<<------------------------------------- EJECTED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         return;
       }
       event.preventDefault();
@@ -128,15 +124,12 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
         cursor.x,
         action as BarMoveAction,
         changedTask,
-        originalSelectedTask,
         xStep,
         timeStep,
         excludeWeekdays,
         initEventX1Delta,
-        rtl
+        rtl,
       );
-
-      console.log("handleMouseUp: newChangedTask =", newChangedTask.days_duration, newChangedTask.start, newChangedTask.end);
 
       const isNotLikeOriginal = ( (originalSelectedTask.start!==newChangedTask.start) || (originalSelectedTask.end!==newChangedTask.end) || (originalSelectedTask.progress!==newChangedTask.progress) );
 
@@ -151,7 +144,7 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
       if (!!isNotLikeOriginal) {
         if ( (action==="move"||action==="end"||action==="start") && onDateChange ) {
           try {
-            const result = await onDateChange(newChangedTask, newChangedTask.barChildren);
+            const result = await onDateChange(newChangedTask);
             if (result !== undefined) {
               operationSuccess = result;
             }
@@ -174,7 +167,6 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
       if (!operationSuccess) {
         setFailedTask(originalSelectedTask);
       }
-      debugger;
     };
 
     if (!isMoving && (ganttEvent.action==="move"||ganttEvent.action==="end"||ganttEvent.action==="start"||ganttEvent.action==="progress") && svg?.current) {
