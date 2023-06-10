@@ -140,13 +140,12 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     handleWidth: number,
     rtl: boolean,
   ): BarTask => {
-    console.log(task.start.getTime()!==task.startCache.getTime(), task.end.getTime()!==task.endCache.getTime());
     if (task.end.getTime()!==task.endCache.getTime()) {
       if (!!task.dependencies?.length) {
         task = shiftDaysOfParent(task, barTasks);  // Overwright current task after shifting same as parent was shifted.
       }
     }
-    [task.start,task.end] = convertTaskWorkDays(excludeWeekdays,task);
+    [task.start,task.end] = convertTaskWorkDays(task,excludeWeekdays);
     task.start.setHours(0,0,0,0);
     task.end.setHours(23,59,59,0);
     let x1: number;

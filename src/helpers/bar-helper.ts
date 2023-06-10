@@ -154,8 +154,8 @@ export const getWorkDaysDiff = (start:Date, end:Date, excludeWeekdays:number[]) 
   return loop_duration
 };
 
-export const convertTaskWorkDays = (excludeWeekdays:number[], task:Task) => {
-  // Try applying
+export const convertTaskWorkDays = (task:Task, excludeWeekdays:number[]) => {
+  // Applying 'excludeWeekdays'.
   if (excludeWeekdays.length>0 && excludeWeekdays.length<6) {
     // If start date is on an excluded DOW, bump the date:
     let breakCnt = 0;
@@ -474,7 +474,7 @@ const handleTaskBySVGMouseEventForBar = (
   const changedTask: BarTask = { ...selectedTask };
   let isChanged = false;
   switch (action) {
-    case "progress":
+    case "progress": {
       if (rtl) {
         changedTask.progress = progressByXRTL(svgX, selectedTask);
       } else {
@@ -492,6 +492,7 @@ const handleTaskBySVGMouseEventForBar = (
         changedTask.progressX = progressX;
       }
       break;
+    }
     case "start": {
       const newX1 = startByX(svgX, xStep, selectedTask);
       changedTask.x1 = newX1;
@@ -514,18 +515,21 @@ const handleTaskBySVGMouseEventForBar = (
             timeStep
           );
         }
-        // Try applying 'excludeWeekdays'.
-        changedTask.days_duration = getWorkDaysDiff(changedTask.start,changedTask.end,excludeWeekdays);
-        // changedTask.days_duration = getDaysDiff(changedTask.start,changedTask.end);
-        [changedTask.start,changedTask.end] = convertTaskWorkDays(excludeWeekdays,changedTask);
-        const [progressWidth, progressX] = progressWidthByParams(
+        // Applying 'excludeWeekdays'.
+        // Odd issue - need to compensate for bug not maintaining increased 'days_duration' correctly:
+        const backShiftOverNonBizDay = (changedTask.start.getTime() < changedTask.startCache.getTime() && excludeWeekdays.includes(changedTask.start.getDay()));
+        changedTask.days_duration = getWorkDaysDiff(changedTask.start,changedTask.end,excludeWeekdays)+(!!backShiftOverNonBizDay?1:0);
+        [changedTask.start,changedTask.end] = convertTaskWorkDays(changedTask,excludeWeekdays);
+        // Update cached dates for next shift
+        changedTask.startCache = new Date(changedTask.start);
+        changedTask.endCache = new Date(changedTask.end);
+        // Update UI progress width ratio
+        [changedTask.progressWidth, changedTask.progressX] = progressWidthByParams(
           changedTask.x1,
           changedTask.x2,
           changedTask.progress,
           rtl
         );
-        changedTask.progressWidth = progressWidth;
-        changedTask.progressX = progressX;
       // }
       break;
     }
@@ -551,18 +555,21 @@ const handleTaskBySVGMouseEventForBar = (
             timeStep
           );
         }
-        // Try applying 'excludeWeekdays'.
-        changedTask.days_duration = getWorkDaysDiff(changedTask.start,changedTask.end,excludeWeekdays);
-        // changedTask.days_duration = getDaysDiff(changedTask.start,changedTask.end);
-        [changedTask.start,changedTask.end] = convertTaskWorkDays(excludeWeekdays,changedTask);
-        const [progressWidth, progressX] = progressWidthByParams(
+        // Applying 'excludeWeekdays'.
+        // Not a bug pre-se, but not expected behavior when forward-shifing and end-date. Compensate for it:
+        const frwdShiftOverNonBizDay = (changedTask.end.getTime() > changedTask.endCache.getTime() && excludeWeekdays.includes(changedTask.end.getDay()));
+        changedTask.days_duration = getWorkDaysDiff(changedTask.start,changedTask.end,excludeWeekdays)+(!!frwdShiftOverNonBizDay?1:0);
+        [changedTask.start,changedTask.end] = convertTaskWorkDays(changedTask,excludeWeekdays);
+        // Update cached dates for next shift
+        changedTask.startCache = new Date(changedTask.start);
+        changedTask.endCache = new Date(changedTask.end);
+        // Update UI progress width ratio
+        [changedTask.progressWidth, changedTask.progressX] = progressWidthByParams(
           changedTask.x1,
           changedTask.x2,
           changedTask.progress,
           rtl
         );
-        changedTask.progressWidth = progressWidth;
-        changedTask.progressX = progressX;
       // }
       break;
     }
@@ -588,8 +595,8 @@ const handleTaskBySVGMouseEventForBar = (
           xStep,
           timeStep
         );
-        // Try applying 'excludeWeekdays'.
-        [changedTask.start,changedTask.end] = convertTaskWorkDays(excludeWeekdays,changedTask);
+        // Applying 'excludeWeekdays'.
+        [changedTask.start,changedTask.end] = convertTaskWorkDays(changedTask,excludeWeekdays);
         changedTask.x1 = newMoveX1;
         changedTask.x2 = newMoveX2;
         const [progressWidth, progressX] = progressWidthByParams(changedTask.x1,changedTask.x2,changedTask.progress,rtl);
