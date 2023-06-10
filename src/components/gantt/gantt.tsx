@@ -88,10 +88,9 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   const [ganttEvent, setGanttEvent] = useState<GanttEvent>({
     action: "",
   });
-  const taskHeight = useMemo(
-    () => (rowHeight * barFill) / 100,
-    [rowHeight, barFill]
-  );
+  const taskHeight = useMemo(() => {
+    return ((rowHeight * barFill) / 100);
+  }, [rowHeight, barFill]);
 
   const [selectedTask, setSelectedTask] = useState<BarTask>();
   const [failedTask, setFailedTask] = useState<BarTask | null>(null);
@@ -390,9 +389,9 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   useEffect(()=>{
     if (!isFirstInitialized.current && !!barTasks.length && typeof(onInitialize)==="function") {
       isFirstInitialized.current = true;
-      onInitialize(barTasks);
+      onInitialize(barTasks,dateSetup.dates);
     }
-  },[isFirstInitialized,barTasks]);
+  },[isFirstInitialized,barTasks,dateSetup]);
 
   const handleScrollY = (event: SyntheticEvent<HTMLDivElement>) => {
     if (scrollY !== event.currentTarget.scrollTop && !ignoreScrollEvent) {
