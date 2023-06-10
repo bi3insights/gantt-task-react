@@ -158,7 +158,7 @@ export interface StylingOption {
 
 export interface GanttProps extends EventOption, DisplayOption, StylingOption {
   tasks: Task[];
-  onInitialize: Function | undefined;
-  // isFirstInitialized: useRef<boolean|undefined>;
+  onInitialize: Function|undefined;
+  ganttRefreshState: boolean|undefined;
   rerender: Function;
 }

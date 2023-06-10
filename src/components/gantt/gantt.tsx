@@ -58,12 +58,13 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   onDragChange,
   onDateChange,
   onProgressChange,
-  onInitialize,
   onDoubleClick,
   onClick,
   onDelete,
   onSelect,
   onExpanderClick,
+  onInitialize,
+  ganttRefreshState,
 }) => {
   // const initialized = useRef<boolean>(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -156,19 +157,15 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     };
   };
 
-  useEffect(()=>{
-    const [startDate, endDate] = dateRange;
-    setDateSetup({ viewMode, dates: seedDates(startDate, endDate, viewMode) });
-  },[viewMode]);
-
-
   // task change events
+  const ganttRefreshStateCacheRef = useRef(ganttRefreshState);
   useEffect(() => {
     let filteredTasks: Task[] = tasks;
     if (onExpanderClick) {
       filteredTasks = removeHiddenTasks(filteredTasks);
     }
     filteredTasks = filteredTasks.sort(sortTasks);
+
     // TO PREVENT SCROLL-SHIFT EXPANDING CALENDAR RANGE WHILE DRAGGING EVENTS...
     // Comment this out, and the 'setDateSetup()' below that, AND the 'newDates,' line inside  'setBarTasks( -> convertToBarTasks(...))'
     // const [startDate, endDate] = ganttDateRange(
@@ -178,6 +175,17 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     // );
     // let newDates = seedDates(startDate, endDate, viewMode);
     // setDateSetup({ dates: newDates, viewMode });
+    if (ganttRefreshStateCacheRef.current !== ganttRefreshState) {
+      ganttRefreshStateCacheRef.current = ganttRefreshState;
+      const [startDate, endDate] = ganttDateRange(
+        filteredTasks,
+        viewMode,
+        preStepsCount
+      );
+      let newDates = seedDates(startDate, endDate, viewMode);
+      setDateSetup({ dates: newDates, viewMode });
+    }
+
     let _initializedTasks = convertToBarTasks(
       filteredTasks,
       // newDates,  // TO PREVENT SCROLL-SHIFT EXPANDING CALENDAR RANGE WHILE DRAGGING EVENTS - Comment this `newDates,` out, and Uncomment `dateSetup.dates` on the line below.
@@ -259,6 +267,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     // scrollX,
     onExpanderClick,
     dateSetup,  // TO PREVENT SCROLL-SHIFT EXPANDING CALENDAR RANGE WHILE DRAGGING EVENTS - Uncomment this 'dateSetup' accessor.
+    ganttRefreshState,
   ]);
 
   useEffect(() => {
