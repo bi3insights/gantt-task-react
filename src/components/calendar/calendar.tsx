@@ -11,6 +11,8 @@ import {
 import { DateSetup } from "../../types/date-setup";
 import styles from "./calendar.module.css";
 
+const dowArray = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
 export type CalendarProps = {
   dateSetup: DateSetup;
   locale: string;
@@ -182,7 +184,7 @@ export const Calendar: React.FC<CalendarProps> = ({
       const moNum: number = date.getMonth();
       if (i === 0 || moNum !== dates[i - 1].getMonth()) {
         // top
-        topValue = `${getLocaleMonth(date,locale).substring(0,3)}${(moNum===0?` ${date.getFullYear()}`:"")}`;  // Only show YEAR for January.
+        topValue = `${getLocaleMonth(date,locale).substring(0,3)}${(moNum===0||moNum===11?` ${date.getFullYear()}`:"")}`;  // Only show YEAR for Dec/Jan.
       }
       // bottom
       // const bottomValue = `W${getWeekNumberISO8601(date)}`;  // No longer showing weeks, instead showing dates of Monday of each week.
@@ -204,10 +206,10 @@ export const Calendar: React.FC<CalendarProps> = ({
             <TopPartOfCalendar
               key={topValue}
               value={topValue}
-              x1Line={columnWidth * i + weeksCount * columnWidth}
+              x1Line={(columnWidth * i) + (weeksCount * columnWidth)}
               y1Line={0}
               y2Line={topDefaultHeight}
-              xText={columnWidth * i + columnWidth * weeksCount * 0.5}
+              xText={(columnWidth * i) + (columnWidth * weeksCount * 0.5)}
               yText={topDefaultHeight * 0.9}
             />
           );
@@ -222,20 +224,32 @@ export const Calendar: React.FC<CalendarProps> = ({
   const getCalendarValuesForDay = () => {
     const topValues: ReactChild[] = [];
     const bottomValues: ReactChild[] = [];
-    const topDefaultHeight = headerHeight * 0.5;
+    const topDefaultHeight = headerHeight * 0.4;
     const dates = dateSetup.dates;
     for (let i = 0; i < dates.length; i++) {
       const date = dates[i];
-      const bottomValue = `${date.getDate().toString()}`;
+      const bottomDate = `${date.getDate().toString()}`;
+      const bottomDow = `${dowArray[date.getDay()]}`;
       bottomValues.push(
         <text
           key={date.getTime()}
-          y={headerHeight * 0.8}
-          x={columnWidth * i + columnWidth * 0.5}
+          y={headerHeight * 0.7}
+          x={(columnWidth * i) + (columnWidth * 0.5)}
           className={styles.calendarBottomText}
           width={columnWidth}
         >
-          {bottomValue}
+          {bottomDate}
+        </text>
+      );
+      bottomValues.push(
+        <text
+          key={date.getTime().toString()+"2"}
+          y={headerHeight * 0.9}
+          x={(columnWidth * i) + (columnWidth * 0.5)}
+          className={styles.calendarBottomTextDow}
+          width={columnWidth}
+        >
+          {bottomDow}
         </text>
       );
       if (
@@ -356,6 +370,7 @@ export const Calendar: React.FC<CalendarProps> = ({
 
   let topValues: ReactChild[] = [];
   let bottomValues: ReactChild[] = [];
+  console.log("dateSetup.viewMode =", dateSetup.viewMode);
   switch (dateSetup.viewMode) {
     // case ViewMode.Year:
     //   [topValues, bottomValues] = getCalendarValuesForYear();
