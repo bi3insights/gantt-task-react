@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  SyntheticEvent,
-  useRef,
-  useEffect,
-  useMemo,
-} from "react";
+import React, { useState,SyntheticEvent,useRef,useEffect,useMemo } from "react";
 import { ViewMode, GanttProps, Task } from "../../types/public-types";
 import { GridProps } from "../grid/grid";
 import { ganttDateRange, seedDates } from "../../helpers/date-helper";
@@ -77,19 +71,13 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   const isFirstInitialized = useRef<boolean>(false);
 
   // TO PREVENT SCROLL-SHIFT EXPANDING CALENDAR RANGE WHILE DRAGGING EVENTS...
-  // Replace this 'const [dateSetup, setDateSetup] =...' with two separate fns below: `const [dateRange, ]` and `const [dateSetup, ]`.
-  // const [dateSetup, setDateSetup] = useState<DateSetup>(() => {
-  const [dateSetup, ] = useState<DateSetup>(() => {
-    const [startDate, endDate] = ganttDateRange(tasks, viewMode, preStepsCount);
+  const [dateRange, setDateRange] = useState<Date[]>(() => {
+    return ganttDateRange(tasks, viewMode, preStepsCount);
+  });
+  const [dateSetup, setDateSetup] = useState<DateSetup>(() => {
+    const [startDate, endDate] = dateRange;
     return { viewMode, dates: seedDates(startDate, endDate, viewMode) };
   });
-  // const [dateRange, ] = useState<Date[]>(() => {
-  //   return ganttDateRange(tasks, viewMode, preStepsCount);
-  // });
-  // const [dateSetup, ] = useState<DateSetup>(() => {
-  //   const [startDate, endDate] = dateRange;
-  //   return { viewMode, dates: seedDates(startDate, endDate, viewMode) };
-  // });
 
   const [currentViewDate, setCurrentViewDate] = useState<Date|undefined>(undefined);
 
@@ -169,6 +157,12 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     };
   };
 
+  useEffect(()=>{
+    const [startDate, endDate] = dateRange;
+    setDateSetup({ viewMode, dates: seedDates(startDate, endDate, viewMode) });
+  },[viewMode]);
+
+
   // task change events
   useEffect(() => {
     let filteredTasks: Task[] = tasks;
@@ -187,7 +181,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     // setDateSetup({ dates: newDates, viewMode });
     let _initializedTasks = convertToBarTasks(
       filteredTasks,
-      // newDates,
+      // newDates,  // TO PREVENT SCROLL-SHIFT EXPANDING CALENDAR RANGE WHILE DRAGGING EVENTS - Comment this `newDates,` out, and Uncomment `dateSetup.dates` on the line below.
       dateSetup.dates,
       columnWidth,
       rowHeight,
@@ -212,7 +206,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
         _initializedTasks,
         task,
         i,
-        // newDates,
+        // newDates,  // TO PREVENT SCROLL-SHIFT EXPANDING CALENDAR RANGE WHILE DRAGGING EVENTS - Comment this `newDates,` out, and Uncomment `dateSetup.dates` on the line below.
         dateSetup.dates,
         columnWidth,
         rowHeight,
@@ -241,8 +235,8 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
       return _task;
     });
 
-
     setBarTasks(_initializedTasks);
+    setDateRange(ganttDateRange(_initializedTasks, viewMode, preStepsCount));
   }, [
     tasks,
     viewMode,

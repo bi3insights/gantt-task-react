@@ -353,7 +353,6 @@ export const Calendar: React.FC<CalendarProps> = ({
 
   let topValues: ReactChild[] = [];
   let bottomValues: ReactChild[] = [];
-  console.log("dateSetup.viewMode =", dateSetup.viewMode);
   switch (dateSetup.viewMode) {
     // case ViewMode.Year:
     //   [topValues, bottomValues] = getCalendarValuesForYear();
