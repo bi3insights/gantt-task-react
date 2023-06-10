@@ -15,7 +15,6 @@ export type TaskItemProps = {
   isDateChangeable: boolean;
   isDelete: boolean;
   isSelected: boolean;
-  rtl: boolean;
   onEventStart: (
     action: GanttContentMoveAction,
     selectedTask: BarTask,
@@ -30,7 +29,6 @@ export const TaskItem: React.FC<TaskItemProps> = props => {
     isDelete,
     taskHeight,
     isSelected,
-    rtl,
     onEventStart,
   } = {
     ...props,
@@ -68,11 +66,7 @@ export const TaskItem: React.FC<TaskItemProps> = props => {
     if (isTextInside) {
       return (task.x1 + (width * 0.5));
     }
-    if (rtl && textRef.current) {
-      return (task.x1 - textRef.current.getBBox().width - (arrowIndent * +hasChild) - (arrowIndent * 0.2));
-    } else {
-      return task.x1 + width + (arrowIndent * +hasChild) + (arrowIndent * 0.2);
-    }
+    return task.x1 + width + (arrowIndent * +hasChild) + (arrowIndent * 0.2);
   };
 
   return (

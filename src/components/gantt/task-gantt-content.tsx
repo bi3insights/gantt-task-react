@@ -29,7 +29,6 @@ export type TaskGanttContentProps = {
   arrowLineStroke: number;
   fontSize: string;
   fontFamily: string;
-  rtl: boolean;
   setGanttEvent: (value: GanttEvent) => void;
   setFailedTask: (value: BarTask | null) => void;
   setSelectedTask: (taskId: string) => void;
@@ -52,7 +51,6 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
   arrowLineStroke,
   fontFamily,
   fontSize,
-  rtl,
   setGanttEvent,
   setFailedTask,
   setSelectedTask,
@@ -94,7 +92,6 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
         timeStep,
         excludeWeekdays,
         initEventX1Delta,
-        rtl
       );
 
       // DO NOT CHECK FOR `isChanged` - THIS IS BLOCKING DRAG BACK TO ORIGINAL DATE!
@@ -128,7 +125,6 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
         timeStep,
         excludeWeekdays,
         initEventX1Delta,
-        rtl,
       );
 
       const isNotLikeOriginal = ( (originalSelectedTask.start!==newChangedTask.start) || (originalSelectedTask.end!==newChangedTask.end) || (originalSelectedTask.progress!==newChangedTask.progress) );
@@ -186,7 +182,6 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
     svg,
     isMoving,
     point,
-    rtl,
     setFailedTask,
     setGanttEvent,
   ]);
@@ -274,7 +269,6 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
                 arrowIndent={arrowIndent}
                 arrowLineRadius={arrowLineRadius}
                 arrowLineStroke={arrowLineStroke}
-                rtl={rtl}
               />
             );
           });
@@ -293,7 +287,6 @@ export const TaskGanttContent: React.FC<TaskGanttContentProps> = ({
               onEventStart={handleBarEventStart}
               key={task.id}
               isSelected={!!selectedTask && task.id === selectedTask.id}
-              rtl={rtl}
             />
           );
         })}

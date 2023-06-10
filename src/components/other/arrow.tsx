@@ -9,7 +9,6 @@ type ArrowProps = {
   arrowIndent: number;
   arrowLineRadius: number;
   arrowLineStroke: number;
-  rtl: boolean;
 };
 export const Arrow: React.FC<ArrowProps> = ({
   taskFrom,
@@ -19,33 +18,20 @@ export const Arrow: React.FC<ArrowProps> = ({
   arrowIndent,
   arrowLineRadius,
   arrowLineStroke,
-  rtl,
 }) => {
   let path: string;
   let trianglePoints: string;
   const safeStrokeWidth = (!arrowLineStroke || arrowLineStroke < 0.5 ? 0.5 : (arrowLineStroke > 5 ? 5 : arrowLineStroke));
 
-  if (rtl) {
-    [path, trianglePoints] = drownPathAndTriangleRTL(
-      taskFrom,
-      taskTo,
-      rowHeight,
-      taskHeight,
-      arrowIndent,
-      // arrowLineRadius,
-      // safeStrokeWidth,
-    );
-  } else {
-    [path, trianglePoints] = drownPathAndTriangle(
-      taskFrom,
-      taskTo,
-      rowHeight,
-      taskHeight,
-      arrowIndent,
-      arrowLineRadius,
-      safeStrokeWidth,
-    );
-  }
+  [path, trianglePoints] = drownPathAndTriangle(
+    taskFrom,
+    taskTo,
+    rowHeight,
+    taskHeight,
+    arrowIndent,
+    arrowLineRadius,
+    safeStrokeWidth,
+  );
 
   return (
     <g className="arrow">
@@ -124,29 +110,5 @@ const drownPathAndTriangle = (
     a ${safeRadius} ${safeRadius} 0 0 ${isUp?1:0} ${safeRadius} ${isUp?"-":""}${safeRadius}
     h ${taskToHorizontalOffsetValue}`;
   const trianglePoints = `${taskTo.x1},${taskToEndPosition} ${taskTo.x1 - 5},${taskToEndPosition - 5} ${taskTo.x1 - 5},${taskToEndPosition + 5}`;
-  return [path, trianglePoints];
-};
-
-const drownPathAndTriangleRTL = (
-  taskFrom: BarTask,
-  taskTo: BarTask,
-  rowHeight: number,
-  taskHeight: number,
-  arrowIndent: number,
-  // arrowLineRadius: number,  // NOT IMPLEMENTED YET!
-  // safeStrokeWidth: number,  // NOT IMPLEMENTED YET!
-) => {
-  const indexCompare = (taskFrom.index > taskTo.index ? -1 : 1);
-  const taskToEndPosition = (taskTo.y + (taskHeight / 2));
-  const taskFromEndPosition = (taskFrom.x1 - (arrowIndent * 2));
-  const taskFromHorizontalOffsetValue = (taskFromEndPosition > taskTo.x2 ? "" : `H ${taskTo.x2 + arrowIndent}`);
-  const taskToHorizontalOffsetValue = (taskFromEndPosition < taskTo.x2 ? -arrowIndent : (taskTo.x2 - taskFrom.x1 + arrowIndent));
-  const path = `M ${taskFrom.x1} ${taskFrom.y + taskHeight / 2}
-    h ${-arrowIndent}
-    v ${(indexCompare * rowHeight) / 2}
-    ${taskFromHorizontalOffsetValue}
-    V ${taskToEndPosition}
-    h ${taskToHorizontalOffsetValue}`;
-  const trianglePoints = `${taskTo.x2},${taskToEndPosition} ${taskTo.x2 + 5},${taskToEndPosition + 5} ${taskTo.x2 + 5},${taskToEndPosition - 5}`;
   return [path, trianglePoints];
 };

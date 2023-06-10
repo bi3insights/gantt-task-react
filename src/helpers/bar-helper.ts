@@ -10,7 +10,6 @@ export const convertToBarTasks = (
   taskHeight: number,
   barCornerRadius: number,
   handleWidth: number,
-  rtl: boolean,
   barProgressColor: string,
   barProgressSelectedColor: string,
   barBackgroundColor: string,
@@ -33,7 +32,6 @@ export const convertToBarTasks = (
       taskHeight,
       barCornerRadius,
       handleWidth,
-      rtl,
       barProgressColor,
       barProgressSelectedColor,
       barBackgroundColor,
@@ -72,7 +70,6 @@ const convertToBarTask = (
   taskHeight: number,
   barCornerRadius: number,
   handleWidth: number,
-  rtl: boolean,
   barProgressColor: string,
   barProgressSelectedColor: string,
   barBackgroundColor: string,
@@ -110,7 +107,6 @@ const convertToBarTask = (
         taskHeight,
         barCornerRadius,
         handleWidth,
-        rtl,
         projectProgressColor,
         projectProgressSelectedColor,
         projectBackgroundColor,
@@ -127,7 +123,6 @@ const convertToBarTask = (
         taskHeight,
         barCornerRadius,
         handleWidth,
-        rtl,
         barProgressColor,
         barProgressSelectedColor,
         barBackgroundColor,
@@ -189,7 +184,6 @@ const convertToBar = (
   taskHeight: number,
   barCornerRadius: number,
   handleWidth: number,
-  rtl: boolean,
   barProgressColor: string,
   barProgressSelectedColor: string,
   barBackgroundColor: string,
@@ -210,7 +204,6 @@ const convertToBar = (
     x1,
     x2,
     task.progress,
-    rtl
   );
   const y = taskYCoordinate(index, rowHeight, taskHeight);
   const hideChildren = task.type === "project" ? task.hideChildren : undefined;
@@ -322,15 +315,10 @@ export const progressWidthByParams = (
   taskX1: number,
   taskX2: number,
   progress: number,
-  rtl: boolean
 ) => {
   const progressWidth = (((taskX2 - taskX1) * progress) * 0.01);
   let progressX: number;
-  if (rtl) {
-    progressX = taskX2 - progressWidth;
-  } else {
-    progressX = taskX1;
-  }
+  progressX = taskX1;
   return [progressWidth, progressX];
 };
 
@@ -351,15 +339,6 @@ const progressByX = (x: number, task: BarTask) => {
   else {
     const barWidth = task.x2 - task.x1;
     const progressPercent = Math.round(((x - task.x1) * 100) / barWidth);
-    return progressPercent;
-  }
-};
-const progressByXRTL = (x: number, task: BarTask) => {
-  if (x >= task.x2) return 0;
-  else if (x <= task.x1) return 100;
-  else {
-    const barWidth = task.x2 - task.x1;
-    const progressPercent = Math.round(((task.x2 - x) * 100) / barWidth);
     return progressPercent;
   }
 };
@@ -431,7 +410,6 @@ export const handleTaskBySVGMouseEvent = (
   timeStep: number,
   excludeWeekdays: number[],
   initEventX1Delta: number,
-  rtl: boolean
 ): { isChanged: boolean; changedTask: BarTask } => {
   let result: { isChanged: boolean; changedTask: BarTask };
   switch (selectedTask.type) {
@@ -454,7 +432,6 @@ export const handleTaskBySVGMouseEvent = (
         timeStep,
         excludeWeekdays,
         initEventX1Delta,
-        rtl
       );
       break;
   }
@@ -469,25 +446,15 @@ const handleTaskBySVGMouseEventForBar = (
   timeStep: number,
   excludeWeekdays: number[],
   initEventX1Delta: number,
-  rtl: boolean
 ): { isChanged: boolean; changedTask: BarTask } => {
   const changedTask: BarTask = { ...selectedTask };
   let isChanged = false;
   switch (action) {
     case "progress": {
-      if (rtl) {
-        changedTask.progress = progressByXRTL(svgX, selectedTask);
-      } else {
-        changedTask.progress = progressByX(svgX, selectedTask);
-      }
+      changedTask.progress = progressByX(svgX, selectedTask);
       isChanged = changedTask.progress !== selectedTask.progress;
       if (isChanged) {
-        const [progressWidth, progressX] = progressWidthByParams(
-          changedTask.x1,
-          changedTask.x2,
-          changedTask.progress,
-          rtl
-        );
+        const [progressWidth, progressX] = progressWidthByParams(changedTask.x1,changedTask.x2,changedTask.progress);
         changedTask.progressWidth = progressWidth;
         changedTask.progressX = progressX;
       }
@@ -498,23 +465,7 @@ const handleTaskBySVGMouseEventForBar = (
       changedTask.x1 = newX1;
       isChanged = newX1 !== selectedTask.x1;
       // if (isChanged) {
-        if (rtl) {
-          changedTask.end = dateByX(
-            newX1,
-            selectedTask.x1,
-            selectedTask.end,
-            xStep,
-            timeStep
-          );
-        } else {
-          changedTask.start = dateByX(
-            newX1,
-            selectedTask.x1,
-            selectedTask.start,
-            xStep,
-            timeStep
-          );
-        }
+        changedTask.start = dateByX(newX1,selectedTask.x1,selectedTask.start,xStep,timeStep);
         // Applying 'excludeWeekdays'.
         // Odd issue - need to compensate for bug not maintaining increased 'days_duration' correctly:
         const backShiftOverNonBizDay = (changedTask.start.getTime() < changedTask.startCache.getTime() && excludeWeekdays.includes(changedTask.start.getDay()));
@@ -524,12 +475,7 @@ const handleTaskBySVGMouseEventForBar = (
         changedTask.startCache = new Date(changedTask.start);
         changedTask.endCache = new Date(changedTask.end);
         // Update UI progress width ratio
-        [changedTask.progressWidth, changedTask.progressX] = progressWidthByParams(
-          changedTask.x1,
-          changedTask.x2,
-          changedTask.progress,
-          rtl
-        );
+        [changedTask.progressWidth, changedTask.progressX] = progressWidthByParams(changedTask.x1,changedTask.x2,changedTask.progress);
       // }
       break;
     }
@@ -538,23 +484,7 @@ const handleTaskBySVGMouseEventForBar = (
       changedTask.x2 = newX2;
       isChanged = newX2 !== selectedTask.x2;
       // if (isChanged) {
-        if (rtl) {
-          changedTask.start = dateByX(
-            newX2,
-            selectedTask.x2,
-            selectedTask.start,
-            xStep,
-            timeStep
-          );
-        } else {
-          changedTask.end = dateByX(
-            newX2,
-            selectedTask.x2,
-            selectedTask.end,
-            xStep,
-            timeStep
-          );
-        }
+        changedTask.end = dateByX(newX2,selectedTask.x2,selectedTask.end,xStep,timeStep);
         // Applying 'excludeWeekdays'.
         // Not a bug pre-se, but not expected behavior when forward-shifing and end-date. Compensate for it:
         const frwdShiftOverNonBizDay = (changedTask.end.getTime() > changedTask.endCache.getTime() && excludeWeekdays.includes(changedTask.end.getDay()));
@@ -564,12 +494,7 @@ const handleTaskBySVGMouseEventForBar = (
         changedTask.startCache = new Date(changedTask.start);
         changedTask.endCache = new Date(changedTask.end);
         // Update UI progress width ratio
-        [changedTask.progressWidth, changedTask.progressX] = progressWidthByParams(
-          changedTask.x1,
-          changedTask.x2,
-          changedTask.progress,
-          rtl
-        );
+        [changedTask.progressWidth, changedTask.progressX] = progressWidthByParams(changedTask.x1,changedTask.x2,changedTask.progress);
       // }
       break;
     }
@@ -581,25 +506,13 @@ const handleTaskBySVGMouseEventForBar = (
       );
       isChanged = newMoveX1 !== selectedTask.x1;
       if (isChanged) {
-        changedTask.start = dateByX(
-          newMoveX1,
-          selectedTask.x1,
-          selectedTask.start,
-          xStep,
-          timeStep
-        );
-        changedTask.end = dateByX(
-          newMoveX2,
-          selectedTask.x2,
-          selectedTask.end,
-          xStep,
-          timeStep
-        );
+        changedTask.start = dateByX(newMoveX1,selectedTask.x1,selectedTask.start,xStep,timeStep);
+        changedTask.end = dateByX(newMoveX2,selectedTask.x2,selectedTask.end,xStep,timeStep);
         // Applying 'excludeWeekdays'.
         [changedTask.start,changedTask.end] = convertTaskWorkDays(changedTask,excludeWeekdays);
         changedTask.x1 = newMoveX1;
         changedTask.x2 = newMoveX2;
-        const [progressWidth, progressX] = progressWidthByParams(changedTask.x1,changedTask.x2,changedTask.progress,rtl);
+        const [progressWidth, progressX] = progressWidthByParams(changedTask.x1,changedTask.x2,changedTask.progress);
         changedTask.progressWidth = progressWidth;
         changedTask.progressX = progressX;
       }
@@ -623,20 +536,10 @@ const handleTaskBySVGMouseEventForMilestone = (
   let isChanged = false;
   switch (action) {
     case "move": {
-      const [newMoveX1, newMoveX2] = moveByX(
-        svgX - initEventX1Delta,
-        xStep,
-        selectedTask
-      );
+      const [newMoveX1, newMoveX2] = moveByX((svgX - initEventX1Delta),xStep,selectedTask);
       isChanged = newMoveX1 !== selectedTask.x1;
       if (isChanged) {
-        changedTask.start = dateByX(
-          newMoveX1,
-          selectedTask.x1,
-          selectedTask.start,
-          xStep,
-          timeStep
-        );
+        changedTask.start = dateByX(newMoveX1,selectedTask.x1,selectedTask.start,xStep,timeStep);
         changedTask.end = changedTask.start;
         changedTask.x1 = newMoveX1;
         changedTask.x2 = newMoveX2;

@@ -47,7 +47,6 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
   projectBackgroundSelectedColor = "#f7bb53",
   milestoneBackgroundColor = "#f1c453",
   milestoneBackgroundSelectedColor = "#f29e4c",
-  rtl = false,
   handleWidth = 8,
   timeStep = 300000,
   excludeWeekdays = [],
@@ -138,7 +137,6 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     taskHeight: number,
     excludeWeekdays: number[],
     handleWidth: number,
-    rtl: boolean,
   ): BarTask => {
     if (task.end.getTime()!==task.endCache.getTime()) {
       if (!!task.dependencies?.length) {
@@ -159,7 +157,6 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
       x1,
       x2,
       task.progress,
-      rtl
     );
     const y = taskYCoordinate(index, rowHeight, taskHeight);
     return {
@@ -187,12 +184,6 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     //   preStepsCount
     // );
     // let newDates = seedDates(startDate, endDate, viewMode);
-    // // if (rtl) {
-    // //   newDates = newDates.reverse();
-    // //   if (scrollX === -1) {
-    // //     setScrollX(newDates.length * columnWidth);
-    // //   }
-    // // }
     // setDateSetup({ dates: newDates, viewMode });
     let _initializedTasks = convertToBarTasks(
       filteredTasks,
@@ -203,7 +194,6 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
       taskHeight,
       barCornerRadius,
       handleWidth,
-      rtl,
       barProgressColor,
       barProgressSelectedColor,
       barBackgroundColor,
@@ -229,7 +219,6 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
         taskHeight,
         excludeWeekdays,
         handleWidth,
-        rtl,
       );
       return new_task;
     });
@@ -274,7 +263,6 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     projectBackgroundSelectedColor,
     milestoneBackgroundColor,
     milestoneBackgroundSelectedColor,
-    rtl,
     // scrollX,
     onExpanderClick,
     dateSetup,  // TO PREVENT SCROLL-SHIFT EXPANDING CALENDAR RANGE WHILE DRAGGING EVENTS - Uncomment this 'dateSetup' accessor.
@@ -402,7 +390,6 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     scrollX,
     ganttHeight,
     svgWidth,
-    rtl,
     ganttFullHeight,
   ]);
 
@@ -507,7 +494,6 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     svgWidth,
     columnWidth,
     todayColor,
-    rtl,
   };
   const calendarProps: CalendarProps = {
     dateSetup,
@@ -517,7 +503,6 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     columnWidth,
     fontFamily,
     fontSize,
-    rtl,
   };
   const barProps: TaskGanttContentProps = {
     tasks: barTasks,
@@ -536,7 +521,6 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     arrowLineRadius,
     arrowLineStroke,
     svgWidth,
-    rtl,
     setGanttEvent,
     setFailedTask,
     setSelectedTask: handleSelectedTask,
@@ -597,7 +581,6 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
             headerHeight={headerHeight}
             taskListWidth={taskListWidth}
             TooltipContent={TooltipContent}
-            rtl={rtl}
             svgWidth={svgWidth}
           />
         )}
@@ -607,14 +590,12 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
           headerHeight={headerHeight}
           scroll={scrollY}
           onScroll={handleScrollY}
-          rtl={rtl}
         />
       </div>
       <HorizontalScroll
         svgWidth={svgWidth}
         taskListWidth={taskListWidth}
         scroll={scrollX}
-        rtl={rtl}
         onScroll={handleScrollX}
       />
     </div>
