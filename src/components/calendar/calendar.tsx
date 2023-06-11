@@ -163,6 +163,8 @@ export const Calendar: React.FC<CalendarProps> = ({
     const dates = dateSetup.dates;
     for (let i = dates.length - 1; i >= 0; i--) {
       const date = dates[i];
+      const datews = new Date((new Date(date)).setDate(date.getDate()-1));
+      const datewe = new Date((new Date(datews)).setDate(datews.getDate()+6));
       let topValue = "";
       const moNum: number = date.getMonth();
       if (i === 0 || moNum !== dates[i - 1].getMonth()) {
@@ -171,12 +173,12 @@ export const Calendar: React.FC<CalendarProps> = ({
       }
       // bottom
       // const bottomValue = `W${getWeekNumberISO8601(date)}`;  // No longer showing weeks, instead showing dates of Monday of each week.
-      const bottomValue = `${date.getDate()}`;
+      const bottomValue = `${datews.getDate()}-${datewe.getDate()}`;
       bottomValues.push(
         <text
           key={`${date.getFullYear()}${date.getMonth()}${date.getDate()}`}
           y={headerHeight * 0.8}
-          x={columnWidth * i}
+          x={(columnWidth * i)+25}
           className={styles.calendarBottomText}
         >
           {bottomValue}

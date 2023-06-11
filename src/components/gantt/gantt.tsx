@@ -159,6 +159,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
 
   // task change events
   const ganttRefreshStateCacheRef = useRef(ganttRefreshState);
+  const ganttViewModeStateCacheRef = useRef(viewMode);
   useEffect(() => {
     let filteredTasks: Task[] = tasks;
     if (onExpanderClick) {
@@ -175,8 +176,9 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
     // );
     // let newDates = seedDates(startDate, endDate, viewMode);
     // setDateSetup({ dates: newDates, viewMode });
-    if (ganttRefreshStateCacheRef.current !== ganttRefreshState) {
+    if (ganttRefreshStateCacheRef.current !== ganttRefreshState || ganttViewModeStateCacheRef.current!==viewMode) {
       ganttRefreshStateCacheRef.current = ganttRefreshState;
+      ganttViewModeStateCacheRef.current = viewMode;
       const [startDate, endDate] = ganttDateRange(
         filteredTasks,
         viewMode,
