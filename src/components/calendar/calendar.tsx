@@ -138,7 +138,9 @@ export const Calendar: React.FC<CalendarProps> = ({
         date.getFullYear() !== dateSetup.dates[i - 1].getFullYear()
       ) {
         const topValue = date.getFullYear().toString();
-        let xText: number = (6 + i - date.getMonth()) * columnWidth;
+        const xTextPre: number = (columnWidth * i + columnWidth * 0.5);
+        const xText: number = ((6 + i - date.getMonth()) * columnWidth);
+        const xTextPost: number = ((6 + new Date(date.getFullYear(), date.getMonth()+1, 0).getDate()) * columnWidth);
         topValues.push(
           <TopPartOfCalendar
             key={topValue}
@@ -146,7 +148,9 @@ export const Calendar: React.FC<CalendarProps> = ({
             x1Line={columnWidth * i}
             y1Line={0}
             y2Line={topDefaultHeight}
+            xTextPre={xTextPre}
             xText={xText}
+            xTextPost={xTextPost}
             yText={topDefaultHeight * 0.9}
           />
         );
@@ -194,7 +198,9 @@ export const Calendar: React.FC<CalendarProps> = ({
               x1Line={(columnWidth * i) + (weeksCount * columnWidth)}
               y1Line={0}
               y2Line={topDefaultHeight}
+              xTextPre={(columnWidth * i) + (columnWidth * weeksCount * 0.5)}
               xText={(columnWidth * i) + (columnWidth * weeksCount * 0.5)}
+              xTextPost={(columnWidth * i) + (columnWidth * weeksCount * 0.5)}
               yText={topDefaultHeight * 0.9}
             />
           );
@@ -249,6 +255,8 @@ export const Calendar: React.FC<CalendarProps> = ({
             x1Line={columnWidth * (i + 1)}
             y1Line={0}
             y2Line={topDefaultHeight}
+            xTextPre={-1}
+            xTextPost={-1}
             xText={
               columnWidth * (i + 1) -
               getDaysInMonth(date.getMonth(), date.getFullYear()) *

@@ -4,6 +4,10 @@
   margin: 0;
   padding: 0;
 }
+.ganttHeaderSticky {
+  position: sticky;
+  top: 0;
+}
 
 .horizontalContainer {
   margin: 0;
