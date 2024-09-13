@@ -99,7 +99,7 @@ export const TaskItem: React.FC<TaskItemProps> = props => {
       {taskItem}
       <text
         x={getX()}
-        y={task.y + (taskHeight * 0.5)}
+        y={task.y + (taskHeight * 0.5) + (isTextInside?-1:4)}
         className={
           isTextInside
             ? style.barLabel
