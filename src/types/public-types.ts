@@ -96,6 +96,7 @@ export interface DisplayOption {
 }
 
 export interface StylingOption {
+  headerRef?: any;
   headerHeight?: number;
   columnWidth?: number;
   listCellWidth?: string;

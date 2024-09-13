@@ -21,6 +21,7 @@ import styles from "./gantt.module.css";
 
 export const Gantt: React.FunctionComponent<GanttProps> = ({
   tasks,
+  headerRef = null,
   headerHeight = 50,
   columnWidth = 60,
   listCellWidth = "155px",
@@ -567,6 +568,7 @@ export const Gantt: React.FunctionComponent<GanttProps> = ({
           gridProps={gridProps}
           calendarProps={calendarProps}
           barProps={barProps}
+          headerRef={headerRef}
           ganttHeight={ganttHeight}
           scrollY={scrollY}
           scrollX={scrollX}

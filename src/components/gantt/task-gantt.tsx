@@ -8,6 +8,7 @@ export type TaskGanttProps = {
   gridProps: GridProps;
   calendarProps: CalendarProps;
   barProps: TaskGanttContentProps;
+  headerRef?: any;
   ganttHeight: number;
   scrollY: number;
   scrollX: number;
@@ -16,6 +17,7 @@ export const TaskGantt: React.FC<TaskGanttProps> = ({
   gridProps,
   calendarProps,
   barProps,
+  headerRef,
   ganttHeight,
   scrollY,
   scrollX,
@@ -43,14 +45,16 @@ export const TaskGantt: React.FC<TaskGanttProps> = ({
       ref={verticalGanttContainerRef}
       dir="ltr"
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width={gridProps.svgWidth}
-        height={calendarProps.headerHeight}
-        fontFamily={barProps.fontFamily}
-      >
-        <Calendar {...calendarProps} />
-      </svg>
+      <div ref={headerRef} style={{position:"relative",top:0}}>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width={gridProps.svgWidth}
+          height={calendarProps.headerHeight}
+          fontFamily={barProps.fontFamily}
+          >
+          <Calendar {...calendarProps} />
+        </svg>
+      </div>
       <div
         ref={horizontalContainerRef}
         className={styles.horizontalContainer}
