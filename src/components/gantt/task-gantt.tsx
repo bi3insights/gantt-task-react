@@ -55,6 +55,7 @@ export const TaskGantt: React.FC<TaskGanttProps> = ({
         >
           <Calendar {...calendarProps} />
         </svg>
+        <div className={styles.ganttHeaderClear}></div>
       </div>
       <div
         ref={horizontalContainerRef}
@@ -75,7 +76,9 @@ export const TaskGantt: React.FC<TaskGanttProps> = ({
           <Grid {...gridProps} />
           <TaskGanttContent {...newBarProps} />
         </svg>
+        <div className={styles.ganttHeaderClear}></div>
       </div>
+      <div className={styles.ganttHeaderClear}></div>
     </div>
   );
 };
